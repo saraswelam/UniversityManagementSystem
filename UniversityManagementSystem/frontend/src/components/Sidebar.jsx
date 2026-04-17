@@ -1,0 +1,69 @@
+import { NavLink, useNavigate } from 'react-router-dom';
+import { getRoleLabel } from '../data/roles';
+import { authApi } from '../services/api';
+import './Sidebar.css';
+
+const menuItems = [
+  { path: '/dashboard', label: 'Dashboard', icon: 'D', roles: ['admin', 'student', 'professor', 'parent', 'staff'] },
+  { path: '/courses', label: 'Courses', icon: 'C', roles: ['admin', 'student', 'professor'] },
+  { path: '/assignments', label: 'Assignments', icon: 'A', roles: ['admin', 'student', 'professor'] },
+  { path: '/discussions', label: 'Discussions', icon: 'F', roles: ['admin', 'student', 'professor'] },
+  { path: '/office-hours', label: 'Office Hours', icon: 'O', roles: ['admin', 'student', 'professor'] },
+  { path: '/meetings', label: 'Meetings', icon: 'M', roles: ['admin', 'student', 'professor', 'parent', 'staff'] },
+  { path: '/messages', label: 'Messages', icon: '@', roles: ['admin', 'student', 'professor', 'parent', 'staff'] },
+  { path: '/announcements', label: 'Announcements', icon: 'N', roles: ['admin', 'student', 'professor'] },
+  { path: '/staff', label: 'Staff Directory', icon: 'S', roles: ['admin'] },
+  { path: '/room-bookings', label: 'Room Bookings', icon: 'R', roles: ['admin', 'staff'] },
+  { path: '/leave-requests', label: 'Leave Requests', icon: 'L', roles: ['admin', 'staff'] },
+  { path: '/payroll', label: 'Payroll', icon: '$', roles: ['admin', 'staff'] },
+];
+
+function Sidebar() {
+  const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const role = user.role || 'student';
+  const visibleItems = menuItems.filter((item) => item.roles.includes(role));
+
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } catch {
+      // Ignore logout errors and clear local session.
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      navigate('/login', { replace: true });
+    }
+  };
+
+  return (
+    <aside className="sidebar">
+      <div className="sidebar-header">
+        <h1 className="sidebar-title">University</h1>
+        <span className="sidebar-subtitle">Management System</span>
+        <span className="sidebar-role">{getRoleLabel(role)}</span>
+      </div>
+      <nav className="sidebar-nav">
+        {visibleItems.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            className={({ isActive }) =>
+              `nav-item ${isActive ? 'active' : ''}`
+            }
+          >
+            <span className="nav-icon">{item.icon}</span>
+            <span className="nav-label">{item.label}</span>
+          </NavLink>
+        ))}
+      </nav>
+      <div className="sidebar-footer">
+        <button className="logout-btn" onClick={handleLogout}>
+          Logout
+        </button>
+      </div>
+    </aside>
+  );
+}
+
+export default Sidebar;

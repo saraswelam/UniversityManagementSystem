@@ -1,0 +1,289 @@
+.messages-page {
+  padding: 0;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.page-header h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 24px;
+  color: #2c3e50;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.unread-badge {
+  background-color: #e74c3c;
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.add-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  background-color: #e6b800;
+  color: #1a1a2e;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-btn:hover {
+  background-color: #d4a800;
+}
+
+.messages-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.messages-list {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.message-item {
+  padding: 16px 20px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.2s;
+}
+
+.message-item:hover {
+  background-color: #f8f4e8;
+}
+
+.message-item.unread {
+  background-color: #f0f7ff;
+}
+
+.message-item.unread .message-subject {
+  font-weight: 600;
+}
+
+.message-sender {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 4px;
+}
+
+.message-subject {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.message-preview {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: #999;
+}
+
+.message-time {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: #bbb;
+  margin-top: 4px;
+}
+
+.delete-btn {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.message-item:hover .delete-btn {
+  opacity: 1;
+}
+
+.message-detail {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.detail-header h3 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #999;
+}
+
+.detail-meta {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #7f8c8d;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.detail-content {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: #555;
+  line-height: 1.6;
+}
+
+.empty-message {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.message-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #e6b800;
+}
+
+.submit-btn {
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  background-color: #e6b800;
+  color: #1a1a2e;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submit-btn:hover {
+  background-color: #d4a800;
+}
+
+.course-select,
+.instructor-select {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.course-select:focus,
+.instructor-select:focus {
+  outline: none;
+  border-color: #e6b800;
+}
+
+.helper-text {
+  font-size: 12px;
+  color: #999;
+  font-style: italic;
+}
+
+.template-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.template-btn {
+  padding: 10px 12px;
+  border: 1px solid #e6b800;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #e6b800;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.template-btn:hover {
+  background-color: #f8f4e8;
+  border-color: #d4a800;
+}
+
+.template-btn:active {
+  background-color: #e6b800;
+  color: #1a1a2e;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-family: 'DM Sans', sans-serif;
+}

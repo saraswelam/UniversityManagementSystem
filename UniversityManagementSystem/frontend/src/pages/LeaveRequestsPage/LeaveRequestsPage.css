@@ -1,0 +1,235 @@
+.leave-requests-page {
+  padding: 0;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.page-header h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 24px;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.add-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  background-color: #e6b800;
+  color: #1a1a2e;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-btn:hover {
+  background-color: #d4a800;
+}
+
+.requests-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.request-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease;
+  border-left: 4px solid #e6b800;
+}
+
+.request-card:hover {
+  transform: translateY(-4px);
+}
+
+.request-card.approved {
+  border-left-color: #28a745;
+}
+
+.request-card.rejected {
+  border-left-color: #dc3545;
+}
+
+.request-card.pending {
+  border-left-color: #ffc107;
+}
+
+.request-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.leave-type {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #e6b800;
+  background-color: #f8f4e8;
+  padding: 4px 12px;
+  border-radius: 20px;
+  text-transform: capitalize;
+}
+
+.status-badge {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  text-transform: uppercase;
+}
+
+.status-badge.pending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.approved {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-badge.rejected {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.request-dates {
+  font-family: 'DM Serif Display', serif;
+  font-size: 18px;
+  color: #2c3e50;
+  margin: 0 0 12px;
+}
+
+.request-details {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 16px;
+}
+
+.request-details p {
+  margin: 6px 0;
+}
+
+.request-reason {
+  background-color: #f8f4e8;
+  padding: 12px;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 12px;
+  font-style: italic;
+}
+
+.delete-btn {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #dc3545;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #dc3545;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.empty-message {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.leave-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #e6b800;
+}
+
+.date-range {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.submit-btn {
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  background-color: #e6b800;
+  color: #1a1a2e;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submit-btn:hover {
+  background-color: #d4a800;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.calendar-hint {
+  font-size: 12px;
+  color: #999;
+  font-style: italic;
+}
