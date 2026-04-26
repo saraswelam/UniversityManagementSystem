@@ -1,0 +1,14 @@
+{
+  "name": "ums",
+  "version": "1.0.0",
+  "private": true,
+  "description": "University Management System agile project",
+  "scripts": {
+    "dev": "npm run dev --prefix backend",
+    "start": "npm run start --prefix backend"
+  },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ]
+}
