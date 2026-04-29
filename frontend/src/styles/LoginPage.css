@@ -1,0 +1,159 @@
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: #f4f6f9;
+}
+
+.login-center {
+  width: min(100%, 460px);
+  padding: 36px 32px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 16px 40px rgba(24, 34, 53, 0.08);
+  text-align: center;
+}
+
+.logo {
+  margin: 0;
+  font-size: 44px;
+  font-weight: 800;
+  color: #173b56;
+  letter-spacing: 0;
+}
+
+.quote {
+  margin: 8px 0 28px;
+  color: #667085;
+  font-size: 15px;
+}
+
+.login-form {
+  display: grid;
+  gap: 16px;
+  text-align: left;
+}
+
+.login-form label,
+.form-group label {
+  display: grid;
+  gap: 8px;
+  color: #27364e;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.login-form input[type="text"],
+.login-form input[type="email"],
+.login-form input[type="password"] {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #172033;
+  background: #ffffff;
+}
+
+.login-form input:focus {
+  border-color: #285c86;
+  outline: 3px solid rgba(40, 92, 134, 0.16);
+}
+
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: 10px;
+}
+
+.role-option {
+  min-height: 42px;
+  padding: 8px 10px;
+  border: 1px solid #d4dae4;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #24324a;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.role-option:hover,
+.role-option.active {
+  border-color: #285c86;
+  background: #e9f2f6;
+  color: #143b56;
+}
+
+.primary-action {
+  min-height: 50px;
+  border: 0;
+  border-radius: 8px;
+  background: #173b56;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.primary-action:hover:not(:disabled) {
+  background: #23577e;
+}
+
+.primary-action:disabled {
+  background: #8fa3b8;
+  cursor: not-allowed;
+}
+
+.error-message {
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #b42318;
+  font-size: 14px;
+  text-align: left;
+}
+
+.form-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  color: #5b687a;
+}
+
+.remember-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.switch-mode {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #6b7a90;
+}
+
+.switch-mode a {
+  color: #285c86;
+  font-weight: 700;
+}
+
+.name-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 520px) {
+  .login-center {
+    padding: 28px 20px;
+  }
+
+  .name-row {
+    grid-template-columns: 1fr;
+  }
+}

@@ -117,10 +117,28 @@ body {
   color: #ffffff;
   cursor: pointer;
   font-weight: 900;
+  transition: all 0.2s ease;
 }
 
-.primary-action:hover {
+.primary-action:hover:not(:disabled) {
   background: #23577e;
+}
+
+.primary-action:disabled {
+  background: #8fa3b8;
+  cursor: not-allowed;
+}
+
+/* ===== ERROR MESSAGE ===== */
+.error-message {
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: 0.9rem;
+  text-align: left;
 }
 
 /* ===== EXTRA ===== */
@@ -147,4 +165,49 @@ body {
     margin: 16px;
     padding: 28px 20px;
   }
+}
+
+/* ===== SWITCH MODE LINK ===== */
+.switch-mode {
+  margin-top: 20px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: #6b7a90;
+}
+
+.switch-mode a {
+  color: #285c86;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.switch-mode a:hover {
+  text-decoration: underline;
+}
+
+/* ===== SIGN UP FORM ===== */
+.name-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.name-row label {
+  display: grid;
+  gap: 8px;
+  color: #27364e;
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  color: #27364e;
+  font-size: 0.95rem;
+  font-weight: 800;
 }

@@ -1,0 +1,57 @@
+import { NavLink } from 'react-router-dom';
+import { getRoleLabel } from '../data/roles';
+import './Sidebar.css';
+
+const menuItems = [
+  { path: '/dashboard', label: 'Dashboard', icon: 'D', roles: ['admin', 'student', 'professor', 'parent', 'staff'] },
+  { path: '/courses', label: 'Courses', icon: 'C', roles: ['admin', 'student', 'professor', 'parent', 'staff'] },
+  { path: '/assignments', label: 'Assignments', icon: 'A', roles: ['admin', 'student', 'professor', 'parent'] },
+  { path: '/discussions', label: 'Discussions', icon: 'F', roles: ['admin', 'student', 'professor', 'staff'] },
+  { path: '/office-hours', label: 'Office Hours', icon: 'O', roles: ['admin', 'student', 'professor'] },
+  { path: '/meetings', label: 'Meetings', icon: 'M', roles: ['admin', 'student', 'professor', 'parent', 'staff'] },
+  { path: '/messages', label: 'Messages', icon: '@', roles: ['admin', 'student', 'professor', 'parent', 'staff'] },
+  { path: '/announcements', label: 'Announcements', icon: 'N', roles: ['admin', 'student', 'professor', 'parent', 'staff'] },
+];
+
+function Sidebar() {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const role = user.role || 'student';
+  const visibleItems = menuItems.filter((item) => item.roles.includes(role));
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+  };
+
+  return (
+    <aside className="sidebar">
+      <div className="sidebar-header">
+        <h1 className="sidebar-title">University</h1>
+        <span className="sidebar-subtitle">Management System</span>
+        <span className="sidebar-role">{getRoleLabel(role)}</span>
+      </div>
+      <nav className="sidebar-nav">
+        {visibleItems.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            className={({ isActive }) =>
+              `nav-item ${isActive ? 'active' : ''}`
+            }
+          >
+            <span className="nav-icon">{item.icon}</span>
+            <span className="nav-label">{item.label}</span>
+          </NavLink>
+        ))}
+      </nav>
+      <div className="sidebar-footer">
+        <button className="logout-btn" onClick={handleLogout}>
+          Logout
+        </button>
+      </div>
+    </aside>
+  );
+}
+
+export default Sidebar;

@@ -9,7 +9,7 @@ async function connectDB() {
   }
 
   mongoose.connection.on("connected", () => {
-    console.log("MongoDB connected");
+    console.log(`MongoDB connected to database: ${mongoose.connection.name}`);
   });
 
   mongoose.connection.on("error", (error) => {

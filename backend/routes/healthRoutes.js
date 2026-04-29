@@ -9,6 +9,9 @@ router.get("/", (req, res) => {
   res.json({
     status: "ok",
     database: databaseStates[mongoose.connection.readyState] || "unknown",
+    databaseName: mongoose.connection.name || null,
+    host: mongoose.connection.host || null,
+    collections: Object.values(mongoose.models).map((model) => model.collection.name).sort(),
     timestamp: new Date().toISOString()
   });
 });

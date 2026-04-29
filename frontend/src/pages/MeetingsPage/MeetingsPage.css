@@ -1,0 +1,182 @@
+.meetings-page {
+  padding: 0;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.page-header h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 24px;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.add-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  background-color: #e6b800;
+  color: #1a1a2e;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-btn:hover {
+  background-color: #d4a800;
+}
+
+.meetings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.meeting-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.meeting-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.meeting-date {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: #7f8c8d;
+}
+
+.meeting-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.meeting-actions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.meeting-actions button:hover {
+  opacity: 1;
+}
+
+.meeting-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px;
+  color: #2c3e50;
+  margin: 0 0 8px;
+}
+
+.meeting-description {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: #555;
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.meeting-link {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: #e6b800;
+  color: #1a1a2e;
+  text-decoration: none;
+  border-radius: 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.meeting-link:hover {
+  background-color: #d4a800;
+}
+
+.empty-message {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.meeting-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #e6b800;
+}
+
+.submit-btn {
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  background-color: #e6b800;
+  color: #1a1a2e;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submit-btn:hover {
+  background-color: #d4a800;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-family: 'DM Sans', sans-serif;
+}
