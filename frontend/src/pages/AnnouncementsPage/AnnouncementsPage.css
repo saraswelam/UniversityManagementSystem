@@ -47,11 +47,50 @@
   border-left: 4px solid #e6b800;
 }
 
+.announcement-card.pinned {
+  border-left-color: #dc3545;
+}
+
+.announcement-card.cancelled {
+  opacity: 0.65;
+}
+
+.announcement-card.cancelled .announcement-title,
+.announcement-card.cancelled .announcement-content {
+  text-decoration: line-through;
+}
+
 .announcement-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
+}
+
+.announcement-tags {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+  justify-content: center;
+}
+
+.tag {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  text-transform: uppercase;
+}
+
+.tag.pinned {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.tag.cancelled {
+  background-color: #e9ecef;
+  color: #6c757d;
 }
 
 .announcement-course {
@@ -122,6 +161,12 @@
   gap: 16px;
 }
 
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
 .form-group {
   display: flex;
   flex-direction: column;
@@ -132,6 +177,15 @@
   font-family: 'DM Sans', sans-serif;
   font-size: 14px;
   font-weight: 600;
+  color: #2c3e50;
+}
+
+.checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
   color: #2c3e50;
 }
 
