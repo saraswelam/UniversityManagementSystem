@@ -228,6 +228,59 @@
   background-color: #d4a800;
 }
 
+.course-select,
+.instructor-select {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.course-select:focus,
+.instructor-select:focus {
+  outline: none;
+  border-color: #e6b800;
+}
+
+.helper-text {
+  font-size: 12px;
+  color: #999;
+  font-style: italic;
+}
+
+.template-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.template-btn {
+  padding: 10px 12px;
+  border: 1px solid #e6b800;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #e6b800;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.template-btn:hover {
+  background-color: #f8f4e8;
+  border-color: #d4a800;
+}
+
+.template-btn:active {
+  background-color: #e6b800;
+  color: #1a1a2e;
+}
+
 .loading {
   text-align: center;
   padding: 40px;

@@ -17,10 +17,24 @@ async function seed() {
     const existingUser = await User.findOne({ email: "professor@university.edu" });
     
     if (existingUser) {
-      console.log("Test user already exists");
-      console.log("Email: professor@university.edu");
-      console.log("Password: password123");
-      console.log("Role: professor");
+      console.log("Test users already exist");
+      
+      // Link parent to student if not already linked
+      const parent = await User.findOne({ email: "parent@university.edu" });
+      const student = await User.findOne({ email: "student@university.edu" });
+      
+      if (parent && student && !parent.linkedStudentId) {
+        parent.linkedStudentId = student._id;
+        await parent.save();
+        console.log("✓ Linked parent to student");
+      }
+      
+      console.log("\n=== Test Credentials ===");
+      console.log("Professor: professor@university.edu / password123");
+      console.log("Student: student@university.edu / password123");
+      console.log("Parent: parent@university.edu / password123");
+      console.log("Staff: staff@university.edu / password123");
+      console.log("========================\n");
     } else {
       // Create test users for each role
       const testUsers = [
@@ -74,12 +88,23 @@ async function seed() {
         await user.save();
         console.log(`Created user: ${userData.email} (${userData.role})`);
       }
+
+      // Link parent to student
+      const parent = await User.findOne({ email: "parent@university.edu" });
+      const student = await User.findOne({ email: "student@university.edu" });
+      
+      if (parent && student) {
+        parent.linkedStudentId = student._id;
+        await parent.save();
+        console.log("✓ Linked parent (Mary Johnson) to student (Jane Doe)");
+      }
     }
 
     console.log("\n=== Test Credentials ===");
-    console.log("Email: professor@university.edu");
-    console.log("Password: password123");
-    console.log("Role: professor");
+    console.log("Professor: professor@university.edu / password123");
+    console.log("Student: student@university.edu / password123");
+    console.log("Parent: parent@university.edu / password123 (linked to Jane Doe)");
+    console.log("Staff: staff@university.edu / password123");
     console.log("========================\n");
 
     process.exit(0);

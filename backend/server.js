@@ -12,6 +12,10 @@ const officeHourRoutes  = require("./routes/officeHourRoutes");
 const meetingRoutes     = require("./routes/meetingRoutes");
 const announcementRoutes = require("./routes/announcementRoutes");
 const messageRoutes     = require("./routes/messageRoutes");
+const roomBookingRoutes = require("./routes/roomBookingRoutes");
+const leaveRequestRoutes = require("./routes/leaveRequestRoutes");
+const payrollRoutes     = require("./routes/payrollRoutes");
+const parentRoutes      = require("./routes/parentRoutes");
 const { requireAuth }    = require("./middleware/auth");
 
 const app  = express();
@@ -58,6 +62,10 @@ app.use("/api/office-hours",  requireAuth, officeHourRoutes);
 app.use("/api/meetings",      requireAuth, meetingRoutes);
 app.use("/api/announcements", requireAuth, announcementRoutes);
 app.use("/api/messages",      requireAuth, messageRoutes);
+app.use("/api/room-bookings", requireAuth, roomBookingRoutes);
+app.use("/api/leave-requests", requireAuth, leaveRequestRoutes);
+app.use("/api/payroll",       requireAuth, payrollRoutes);
+app.use("/api/parent",        requireAuth, parentRoutes);
 
 async function startServer() {
   try {

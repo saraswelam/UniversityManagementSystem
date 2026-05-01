@@ -8,6 +8,9 @@ import OfficeHoursPage from "./pages/OfficeHoursPage/OfficeHoursPage";
 import MeetingsPage from "./pages/MeetingsPage/MeetingsPage";
 import MessagesPage from "./pages/MessagesPage/MessagesPage";
 import AnnouncementsPage from "./pages/AnnouncementsPage/AnnouncementsPage";
+import RoomBookingsPage from "./pages/RoomBookingsPage/RoomBookingsPage";
+import LeaveRequestsPage from "./pages/LeaveRequestsPage/LeaveRequestsPage";
+import PayrollPage from "./pages/PayrollPage/PayrollPage";
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 
@@ -42,6 +45,9 @@ function App() {
           <Route path="/meetings" element={<MeetingsPage />} />
           <Route path="/messages" element={<MessagesPage />} />
           <Route path="/announcements" element={<AnnouncementsPage />} />
+          <Route path="/room-bookings" element={<RoomBookingsPage />} />
+          <Route path="/leave-requests" element={<LeaveRequestsPage />} />
+          <Route path="/payroll" element={<PayrollPage />} />
         </Route>
       </Route>
 

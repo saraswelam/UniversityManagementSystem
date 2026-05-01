@@ -4,13 +4,16 @@ import './Sidebar.css';
 
 const menuItems = [
   { path: '/dashboard', label: 'Dashboard', icon: 'D', roles: ['admin', 'student', 'professor', 'parent', 'staff'] },
-  { path: '/courses', label: 'Courses', icon: 'C', roles: ['admin', 'student', 'professor', 'parent', 'staff'] },
-  { path: '/assignments', label: 'Assignments', icon: 'A', roles: ['admin', 'student', 'professor', 'parent'] },
-  { path: '/discussions', label: 'Discussions', icon: 'F', roles: ['admin', 'student', 'professor', 'staff'] },
+  { path: '/courses', label: 'Courses', icon: 'C', roles: ['admin', 'student', 'professor'] },
+  { path: '/assignments', label: 'Assignments', icon: 'A', roles: ['admin', 'student', 'professor'] },
+  { path: '/discussions', label: 'Discussions', icon: 'F', roles: ['admin', 'student', 'professor'] },
   { path: '/office-hours', label: 'Office Hours', icon: 'O', roles: ['admin', 'student', 'professor'] },
   { path: '/meetings', label: 'Meetings', icon: 'M', roles: ['admin', 'student', 'professor', 'parent', 'staff'] },
   { path: '/messages', label: 'Messages', icon: '@', roles: ['admin', 'student', 'professor', 'parent', 'staff'] },
-  { path: '/announcements', label: 'Announcements', icon: 'N', roles: ['admin', 'student', 'professor', 'parent', 'staff'] },
+  { path: '/announcements', label: 'Announcements', icon: 'N', roles: ['admin', 'student', 'professor'] },
+  { path: '/room-bookings', label: 'Room Bookings', icon: 'R', roles: ['admin', 'staff'] },
+  { path: '/leave-requests', label: 'Leave Requests', icon: 'L', roles: ['admin', 'staff'] },
+  { path: '/payroll', label: 'Payroll', icon: '$', roles: ['admin', 'staff'] },
 ];
 
 function Sidebar() {

@@ -183,3 +183,44 @@ export const messagesApi = {
   markAsRead: (id) => request(`/messages/${id}/read`, { method: "PATCH" }),
   delete: (id) => request(`/messages/${id}`, { method: "DELETE" }),
 };
+
+export const roomBookingsApi = {
+  getAll: () => request("/room-bookings"),
+  getAvailable: (date, startTime) => request(`/room-bookings/available?date=${date}&startTime=${startTime}`),
+  create: (data) => request("/room-bookings", {
+    method: "POST",
+    body: JSON.stringify(data),
+  }),
+  cancel: (id) => request(`/room-bookings/${id}/cancel`, { method: "PATCH" }),
+  delete: (id) => request(`/room-bookings/${id}`, { method: "DELETE" }),
+};
+
+export const leaveRequestsApi = {
+  getAll: () => request("/leave-requests"),
+  getById: (id) => request(`/leave-requests/${id}`),
+  create: (data) => request("/leave-requests", {
+    method: "POST",
+    body: JSON.stringify(data),
+  }),
+  updateStatus: (id, status, reviewNotes) => request(`/leave-requests/${id}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status, reviewNotes }),
+  }),
+  delete: (id) => request(`/leave-requests/${id}`, { method: "DELETE" }),
+};
+
+export const payrollApi = {
+  getAll: () => request("/payroll"),
+  getCurrent: () => request("/payroll/current"),
+  create: (data) => request("/payroll", {
+    method: "POST",
+    body: JSON.stringify(data),
+  }),
+};
+
+export const parentApi = {
+  getChild: () => request("/parent/child"),
+  getChildCourses: () => request("/parent/child/courses"),
+  getInstructors: () => request("/parent/instructors"),
+};
+
