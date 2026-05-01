@@ -10,10 +10,15 @@ async function validateCourse(req, courseId) {
   return Boolean(await Course.findOne(ownerFilter(req, { _id: courseId })));
 }
 
+function officeHourReadFilter(req, extra = {}) {
+  if (req.user?.role === "student") return extra;
+  return ownerFilter(req, extra);
+}
+
 router.get("/", async (req, res) => {
   try {
     const professorFilter = req.query.professor ? { professor: req.query.professor } : {};
-    const officeHours = await OfficeHour.find(ownerFilter(req, professorFilter))
+    const officeHours = await OfficeHour.find(officeHourReadFilter(req, professorFilter))
       .populate("courseId", "name code")
       .sort({ day: 1, startTime: 1 });
 
