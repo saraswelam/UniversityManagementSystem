@@ -13,6 +13,9 @@ import RoomBookingsPage from "./pages/RoomBookingsPage/RoomBookingsPage";
 import LeaveRequestsPage from "./pages/LeaveRequestsPage/LeaveRequestsPage";
 import PayrollPage from "./pages/PayrollPage/PayrollPage";
 import StaffDirectoryPage from "./pages/StaffDirectoryPage/StaffDirectoryPage";
+import EnrollmentsPage from "./pages/EnrollmentsPage/EnrollmentsPage";
+import StudentsPage from "./pages/StudentsPage/StudentsPage";
+import StaffAvailabilityPage from "./pages/StaffAvailabilityPage/StaffAvailabilityPage";
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import { routeAccess, getDefaultRouteForRole } from "./data/routeAccess";
@@ -137,6 +140,30 @@ function App() {
             element={(
               <RoleRoute allowedRoles={routeAccess["/applications"]}>
                 <ApplicationsPage />
+              </RoleRoute>
+            )}
+          />
+          <Route
+            path="/enrollments"
+            element={(
+              <RoleRoute allowedRoles={routeAccess["/enrollments"]}>
+                <EnrollmentsPage />
+              </RoleRoute>
+            )}
+          />
+          <Route
+            path="/students"
+            element={(
+              <RoleRoute allowedRoles={routeAccess["/students"]}>
+                <StudentsPage />
+              </RoleRoute>
+            )}
+          />
+          <Route
+            path="/staff-availability"
+            element={(
+              <RoleRoute allowedRoles={routeAccess["/staff-availability"]}>
+                <StaffAvailabilityPage />
               </RoleRoute>
             )}
           />

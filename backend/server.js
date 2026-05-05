@@ -19,6 +19,8 @@ const payrollRoutes     = require("./routes/payrollRoutes");
 const parentRoutes      = require("./routes/parentRoutes");
 const staffRoutes       = require("./routes/staffRoutes");
 const applicationRoutes = require("./routes/applicationRoutes");
+const enrollmentRoutes  = require("./routes/enrollmentRoutes");
+const studentRoutes     = require("./routes/studentRoutes");
 const { requireAuth }    = require("./middleware/auth");
 
 const app  = express();
@@ -72,6 +74,8 @@ app.use("/api/payroll",       requireAuth, payrollRoutes);
 app.use("/api/parent",        requireAuth, parentRoutes);
 app.use("/api/staff",         requireAuth, staffRoutes);
 app.use("/api/applications",  requireAuth, applicationRoutes);
+app.use("/api/enrollments",   requireAuth, enrollmentRoutes);
+app.use("/api/students",      requireAuth, studentRoutes);
 
 async function startServer() {
   try {

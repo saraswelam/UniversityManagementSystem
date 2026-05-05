@@ -73,8 +73,11 @@ export const authApi = {
 
 export const coursesApi = {
   ...crudApi("/courses"),
-  getAll: (department) => {
-    const query = department ? `?department=${encodeURIComponent(department)}` : "";
+  getAll: (department, type) => {
+    const params = new URLSearchParams();
+    if (department) params.set("department", department);
+    if (type) params.set("type", type);
+    const query = params.toString() ? `?${params.toString()}` : "";
     return request(`/courses${query}`);
   },
   assignProfessor: (id, professor) => request(`/courses/${id}/assign`, {
@@ -88,6 +91,9 @@ export const coursesApi = {
       creditHours: data.creditHours === undefined || data.creditHours === ""
         ? undefined
         : Number(data.creditHours),
+      enrollmentCap: data.enrollmentCap === undefined || data.enrollmentCap === ""
+        ? undefined
+        : Number(data.enrollmentCap),
     }),
   }),
   update: (id, data) => request(`/courses/${id}`, {
@@ -97,6 +103,9 @@ export const coursesApi = {
       creditHours: data.creditHours === undefined || data.creditHours === ""
         ? undefined
         : Number(data.creditHours),
+      enrollmentCap: data.enrollmentCap === undefined || data.enrollmentCap === ""
+        ? undefined
+        : Number(data.enrollmentCap),
     }),
   }),
 };
@@ -105,6 +114,10 @@ export const staffApi = {
   getAll: (role) => {
     const query = role ? `?role=${encodeURIComponent(role)}` : "";
     return request(`/staff${query}`);
+  },
+  getAvailability: (date) => {
+    const query = date ? `?date=${encodeURIComponent(date)}` : "";
+    return request(`/staff/availability${query}`);
   },
   create: (data) => request("/staff", {
     method: "POST",
@@ -265,6 +278,34 @@ export const leaveRequestsApi = {
     body: JSON.stringify({ status, reviewNotes }),
   }),
   delete: (id) => request(`/leave-requests/${id}`, { method: "DELETE" }),
+};
+
+export const enrollmentsApi = {
+  getAll: (filters = {}) => {
+    const params = new URLSearchParams();
+    if (filters.courseId) params.set("courseId", filters.courseId);
+    if (filters.department) params.set("department", filters.department);
+    if (filters.studentId) params.set("studentId", filters.studentId);
+    const query = params.toString() ? `?${params.toString()}` : "";
+    return request(`/enrollments${query}`);
+  },
+  getMine: () => request("/enrollments/mine"),
+  getStudent: (id) => request(`/enrollments/student/${id}`),
+  create: (courseId) => request("/enrollments", {
+    method: "POST",
+    body: JSON.stringify({ courseId }),
+  }),
+};
+
+export const studentsApi = {
+  getAll: (status) => {
+    const query = status ? `?status=${encodeURIComponent(status)}` : "";
+    return request(`/students${query}`);
+  },
+  updateStatus: (id, status) => request(`/students/${id}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  }),
 };
 
 export const payrollApi = {

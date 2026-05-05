@@ -12,6 +12,9 @@ const pageTitles = {
   '/messages': 'Messages',
   '/announcements': 'Announcements',
   '/applications': 'Applications',
+  '/enrollments': 'Enrollments',
+  '/students': 'Students',
+  '/staff-availability': 'Staff Availability',
 };
 
 function Topbar() {
