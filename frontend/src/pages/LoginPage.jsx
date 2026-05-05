@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import LoginForm from "../components/login/LoginForm.jsx";
 import { roles } from "../data/roles.js";
+import { getDefaultRouteForRole } from "../data/routeAccess.js";
 import { authApi } from "../services/api.js";
 import "../styles/LoginPage.css";
 
@@ -14,12 +15,21 @@ function LoginPage() {
   const activeRole = roles.find((role) => role.id === selectedRole) || roles[0];
 
   const handleLogin = async (credentials) => {
-    setIsLoading(true);
     setError("");
+    const identifier = credentials.identifier?.trim();
+    const password = credentials.password?.trim();
+
+    if (!identifier || !password) {
+      setError("Email/ID and password are required");
+      return;
+    }
+
+    setIsLoading(true);
     
     try {
       const response = await authApi.login({
-        ...credentials,
+        identifier,
+        password,
         role: selectedRole,
       });
       
@@ -28,7 +38,7 @@ function LoginPage() {
       localStorage.setItem("user", JSON.stringify(response.user));
       
       // Redirect based on role
-      navigate("/dashboard");
+      navigate(getDefaultRouteForRole(response.user?.role), { replace: true });
     } catch (err) {
       setError(err.message || "Login failed. Please try again.");
     } finally {

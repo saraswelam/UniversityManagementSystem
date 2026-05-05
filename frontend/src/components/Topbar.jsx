@@ -11,6 +11,7 @@ const pageTitles = {
   '/meetings': 'Meetings',
   '/messages': 'Messages',
   '/announcements': 'Announcements',
+  '/applications': 'Applications',
 };
 
 function Topbar() {
