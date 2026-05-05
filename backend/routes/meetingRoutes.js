@@ -60,7 +60,7 @@ router.patch("/:id", async (req, res) => {
 router.patch("/:id/status", async (req, res) => {
   try {
     const { status } = req.body;
-    if (!["pending", "approved", "declined"].includes(status)) {
+    if (!["pending", "approved", "declined", "cancelled"].includes(status)) {
       return res.status(400).json({ error: "Invalid status" });
     }
 
@@ -79,10 +79,14 @@ router.patch("/:id/status", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
-    const meeting = await Meeting.findOneAndDelete(ownerFilter(req, { _id: req.params.id }));
+    const meeting = await Meeting.findOneAndUpdate(
+      ownerFilter(req, { _id: req.params.id }),
+      { status: "cancelled" },
+      { new: true }
+    );
     if (!meeting) return res.status(404).json({ error: "Meeting not found" });
 
-    res.json({ message: "Deleted" });
+    res.json(meeting);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

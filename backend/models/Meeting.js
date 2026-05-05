@@ -12,7 +12,7 @@ const meetingSchema = new mongoose.Schema(
     mode:        { type: String, default: "In person", trim: true },
     status:      {
       type: String,
-      enum: ["pending", "approved", "declined"],
+      enum: ["pending", "approved", "declined", "cancelled"],
       default: "pending",
     },
     createdBy: {

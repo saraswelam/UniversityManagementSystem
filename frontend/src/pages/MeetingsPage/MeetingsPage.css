@@ -46,6 +46,15 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
+.meeting-card.cancelled {
+  opacity: 0.6;
+}
+
+.meeting-card.cancelled .meeting-title,
+.meeting-card.cancelled .meeting-description {
+  text-decoration: line-through;
+}
+
 .meeting-header {
   display: flex;
   justify-content: space-between;
@@ -62,6 +71,37 @@
 .meeting-actions {
   display: flex;
   gap: 8px;
+}
+
+.status-badge {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  margin-left: auto;
+  margin-right: 12px;
+}
+
+.status-badge.pending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.approved {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-badge.declined {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.status-badge.cancelled {
+  background-color: #e9ecef;
+  color: #6c757d;
 }
 
 .meeting-actions button {

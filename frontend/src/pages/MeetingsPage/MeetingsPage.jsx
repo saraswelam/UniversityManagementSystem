@@ -11,6 +11,8 @@ function MeetingsPage() {
   const [editingMeeting, setEditingMeeting] = useState(null);
   const [formData, setFormData] = useState({ title: '', date: '', time: '', link: '', description: '' });
   const toast = useToast();
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isAdmin = user.role === 'admin';
 
   useEffect(() => {
     fetchMeetings();
@@ -58,10 +60,10 @@ function MeetingsPage() {
     setShowModal(true);
   };
 
-  const handleDelete = async (id) => {
+  const handleCancel = async (id) => {
     if (window.confirm('Cancel this meeting?')) {
       try {
-        await meetingsApi.delete(id);
+        await meetingsApi.updateStatus(id, 'cancelled');
         toast.success('Meeting cancelled');
         fetchMeetings();
       } catch (error) {
@@ -84,15 +86,20 @@ function MeetingsPage() {
       <div className="meetings-list">
         {meetings.length > 0 ? (
           meetings.map((meeting) => (
-            <div key={meeting._id} className="meeting-card">
+            <div key={meeting._id} className={`meeting-card ${meeting.status}`}>
               <div className="meeting-header">
                 <span className="meeting-date">
                   📅 {meeting.date ? new Date(meeting.date).toLocaleDateString() : 'TBD'}
                   {meeting.time && ` at ${meeting.time}`}
                 </span>
+                <span className={`status-badge ${meeting.status || 'pending'}`}>
+                  {meeting.status || 'pending'}
+                </span>
                 <div className="meeting-actions">
-                  <button onClick={() => handleEdit(meeting)}>✏️</button>
-                  <button onClick={() => handleDelete(meeting._id)}>🗑️</button>
+                  {isAdmin && <button onClick={() => handleEdit(meeting)}>✏️</button>}
+                  {isAdmin && meeting.status !== 'cancelled' && (
+                    <button onClick={() => handleCancel(meeting._id)}>🗑️</button>
+                  )}
                 </div>
               </div>
               <h3 className="meeting-title">{meeting.title}</h3>
