@@ -8,6 +8,7 @@ function LeaveRequestsPage() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [actionId, setActionId] = useState(null);
   const [formData, setFormData] = useState({
     startDate: '',
     endDate: '',
@@ -15,6 +16,8 @@ function LeaveRequestsPage() {
     reason: '',
   });
   const toast = useToast();
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isAdmin = user.role === 'admin';
 
   useEffect(() => {
     fetchRequests();
@@ -60,6 +63,32 @@ function LeaveRequestsPage() {
       } catch (error) {
         toast.error(error.message);
       }
+    }
+  };
+
+  const handleStatusChange = async (id, status) => {
+    if (!isAdmin) return;
+    let reviewNotes = '';
+
+    if (status === 'rejected') {
+      const reason = window.prompt('Please provide a rejection reason:');
+      if (reason === null) return;
+      if (!reason.trim()) {
+        toast.error('Rejection reason is required');
+        return;
+      }
+      reviewNotes = reason.trim();
+    }
+
+    setActionId(id);
+    try {
+      await leaveRequestsApi.updateStatus(id, status, reviewNotes);
+      toast.success(`Leave request ${status}`);
+      fetchRequests();
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setActionId(null);
     }
   };
 
@@ -117,7 +146,25 @@ function LeaveRequestsPage() {
                   "{request.reason}"
                 </div>
               )}
-              {request.status === 'pending' && (
+              {request.status === 'pending' && isAdmin && (
+                <div className="admin-actions">
+                  <button
+                    className="approve-btn"
+                    onClick={() => handleStatusChange(request._id, 'approved')}
+                    disabled={actionId === request._id}
+                  >
+                    Approve
+                  </button>
+                  <button
+                    className="reject-btn"
+                    onClick={() => handleStatusChange(request._id, 'rejected')}
+                    disabled={actionId === request._id}
+                  >
+                    Reject
+                  </button>
+                </div>
+              )}
+              {request.status === 'pending' && !isAdmin && (
                 <button 
                   className="delete-btn" 
                   onClick={() => handleDelete(request._id)}

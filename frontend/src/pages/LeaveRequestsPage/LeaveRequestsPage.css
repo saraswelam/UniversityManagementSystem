@@ -154,6 +154,53 @@
   color: #fff;
 }
 
+.admin-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.approve-btn,
+.reject-btn {
+  padding: 10px;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.approve-btn {
+  background-color: #e6f4ea;
+  color: #1e7e34;
+  border-color: #c7e6d2;
+}
+
+.approve-btn:hover {
+  background-color: #1e7e34;
+  color: #fff;
+}
+
+.reject-btn {
+  background-color: #fbeaea;
+  color: #b02a37;
+  border-color: #f4c9cf;
+}
+
+.reject-btn:hover {
+  background-color: #b02a37;
+  color: #fff;
+}
+
+.approve-btn:disabled,
+.reject-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .empty-message {
   grid-column: 1 / -1;
   text-align: center;
