@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const courseSchema = new mongoose.Schema(
   {
     name:          { type: String, required: true, trim: true },
-    code:          { type: String, required: true, trim: true, uppercase: true },
+    code:          { type: String, required: true, trim: true, uppercase: true, unique: true },
     description:   { type: String, default: "", trim: true },
     department:    { type: String, required: true, trim: true },
     creditHours:   { type: Number, default: 3, min: 1 },

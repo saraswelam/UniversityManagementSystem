@@ -73,13 +73,42 @@ export const authApi = {
 
 export const coursesApi = {
   ...crudApi("/courses"),
+  getAll: (department) => {
+    const query = department ? `?department=${encodeURIComponent(department)}` : "";
+    return request(`/courses${query}`);
+  },
+  assignProfessor: (id, professor) => request(`/courses/${id}/assign`, {
+    method: "PATCH",
+    body: JSON.stringify({ professor }),
+  }),
   create: (data) => request("/courses", {
     method: "POST",
     body: JSON.stringify({
-      department: "General",
-      creditHours: 3,
       ...data,
+      creditHours: data.creditHours === undefined || data.creditHours === ""
+        ? undefined
+        : Number(data.creditHours),
     }),
+  }),
+  update: (id, data) => request(`/courses/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      ...data,
+      creditHours: data.creditHours === undefined || data.creditHours === ""
+        ? undefined
+        : Number(data.creditHours),
+    }),
+  }),
+};
+
+export const staffApi = {
+  getAll: (role) => {
+    const query = role ? `?role=${encodeURIComponent(role)}` : "";
+    return request(`/staff${query}`);
+  },
+  create: (data) => request("/staff", {
+    method: "POST",
+    body: JSON.stringify(data),
   }),
 };
 
@@ -147,7 +176,9 @@ export const announcementsApi = {
       courseId: data.courseId || null,
       location: data.location || "",
       date: data.date,
+      time: data.time || "",
       pinned: Boolean(data.pinned),
+      cancelled: Boolean(data.cancelled),
     }),
   }),
   update: (id, data) => request(`/announcements/${id}`, {
@@ -158,7 +189,9 @@ export const announcementsApi = {
       courseId: data.courseId || null,
       location: data.location,
       date: data.date,
+      time: data.time || "",
       pinned: data.pinned,
+      cancelled: Boolean(data.cancelled),
     }),
   }),
   delete: (id) => request(`/announcements/${id}`, { method: "DELETE" }),
@@ -193,6 +226,31 @@ export const roomBookingsApi = {
   }),
   cancel: (id) => request(`/room-bookings/${id}/cancel`, { method: "PATCH" }),
   delete: (id) => request(`/room-bookings/${id}`, { method: "DELETE" }),
+};
+
+export const roomsApi = {
+  getAll: () => request("/rooms"),
+  create: (data) => request("/rooms", {
+    method: "POST",
+    body: JSON.stringify(data),
+  }),
+  update: (id, data) => request(`/rooms/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  }),
+  delete: (id) => request(`/rooms/${id}`, { method: "DELETE" }),
+};
+
+export const applicationsApi = {
+  getAll: (status) => {
+    const query = status ? `?status=${encodeURIComponent(status)}` : "";
+    return request(`/applications${query}`);
+  },
+  getById: (id) => request(`/applications/${id}`),
+  create: (data) => request("/applications", {
+    method: "POST",
+    body: JSON.stringify(data),
+  }),
 };
 
 export const leaveRequestsApi = {

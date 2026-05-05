@@ -1,13 +1,20 @@
 const express = require("express");
 const Course = require("../models/Course");
-const { ownerFilter, removeUndefined, withOwner } = require("../utils/ownership");
+const User = require("../models/User");
+const { removeUndefined, withOwner } = require("../utils/ownership");
 
 const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
     const professorFilter = req.query.professor ? { professor: req.query.professor } : {};
-    const courses = await Course.find(ownerFilter(req, professorFilter)).sort({ createdAt: -1 });
+    const departmentFilter = req.query.department
+      ? { department: req.query.department.trim() }
+      : {};
+    const courses = await Course.find({
+      ...professorFilter,
+      ...departmentFilter,
+    }).sort({ createdAt: -1 });
     res.json(courses);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -16,7 +23,7 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const course = await Course.findOne(ownerFilter(req, { _id: req.params.id }));
+    const course = await Course.findById(req.params.id);
 
     if (!course) return res.status(404).json({ error: "Course not found" });
     res.json(course);
@@ -27,18 +34,32 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ error: "Only admins can create courses" });
+    }
+
     const { name, code, description, department, creditHours, type, enrollmentCap } = req.body;
 
     if (!name || !code || !department) {
       return res.status(400).json({ error: "name, code, department required" });
     }
 
+    const normalizedCode = code.trim().toUpperCase();
+    const existing = await Course.findOne({ code: normalizedCode });
+    if (existing) {
+      return res.status(409).json({ error: "Course code already exists" });
+    }
+
+    const creditHoursValue = creditHours === undefined || creditHours === ""
+      ? undefined
+      : Number(creditHours);
+
     const course = await Course.create(withOwner(req, {
       name,
-      code,
+      code: normalizedCode,
       description,
-      department,
-      creditHours,
+      department: department.trim(),
+      creditHours: creditHoursValue,
       type,
       enrollmentCap,
       professor: req.user.role === "professor" ? req.user.email : undefined,
@@ -46,17 +67,48 @@ router.post("/", async (req, res) => {
 
     res.status(201).json(course);
   } catch (err) {
+    if (err.code === 11000) {
+      return res.status(409).json({ error: "Course code already exists" });
+    }
     res.status(500).json({ error: err.message });
   }
 });
 
 router.patch("/:id", async (req, res) => {
   try {
-    const { name, code, description, department, creditHours, type, enrollmentCap } = req.body;
-    const updates = removeUndefined({ name, code, description, department, creditHours, type, enrollmentCap });
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ error: "Only admins can update courses" });
+    }
 
-    const course = await Course.findOneAndUpdate(
-      ownerFilter(req, { _id: req.params.id }),
+    const { name, code, description, department, creditHours, type, enrollmentCap } = req.body;
+    const normalizedCode = code ? code.trim().toUpperCase() : undefined;
+    const normalizedDepartment = department ? department.trim() : undefined;
+    const creditHoursValue = creditHours === undefined || creditHours === ""
+      ? undefined
+      : Number(creditHours);
+
+    if (normalizedCode) {
+      const existing = await Course.findOne({
+        code: normalizedCode,
+        _id: { $ne: req.params.id },
+      });
+      if (existing) {
+        return res.status(409).json({ error: "Course code already exists" });
+      }
+    }
+
+    const updates = removeUndefined({
+      name,
+      code: normalizedCode,
+      description,
+      department: normalizedDepartment,
+      creditHours: creditHoursValue,
+      type,
+      enrollmentCap,
+    });
+
+    const course = await Course.findByIdAndUpdate(
+      req.params.id,
       updates,
       { new: true, runValidators: true }
     );
@@ -64,19 +116,40 @@ router.patch("/:id", async (req, res) => {
     if (!course) return res.status(404).json({ error: "Course not found" });
     res.json(course);
   } catch (err) {
+    if (err.code === 11000) {
+      return res.status(409).json({ error: "Course code already exists" });
+    }
     res.status(500).json({ error: err.message });
   }
 });
 
 router.patch("/:id/assign", async (req, res) => {
   try {
-    const course = await Course.findOneAndUpdate(
-      ownerFilter(req, { _id: req.params.id }),
-      { professor: req.body.professor },
-      { new: true, runValidators: true }
-    );
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ error: "Only admins can assign professors" });
+    }
 
+    const { professor } = req.body;
+
+    if (!professor) {
+      return res.status(400).json({ error: "professor is required" });
+    }
+
+    const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ error: "Course not found" });
+
+    if (course.professor && course.professor !== professor) {
+      return res.status(409).json({ error: "Primary professor already assigned" });
+    }
+
+    const professorUser = await User.findOne({ email: professor, role: "professor" });
+    if (!professorUser) {
+      return res.status(400).json({ error: "Professor not found" });
+    }
+
+    course.professor = professor;
+    await course.save();
+
     res.json(course);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -85,7 +158,11 @@ router.patch("/:id/assign", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
-    const course = await Course.findOneAndDelete(ownerFilter(req, { _id: req.params.id }));
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ error: "Only admins can delete courses" });
+    }
+
+    const course = await Course.findByIdAndDelete(req.params.id);
 
     if (!course) return res.status(404).json({ error: "Course not found" });
     res.json({ message: "Deleted" });
