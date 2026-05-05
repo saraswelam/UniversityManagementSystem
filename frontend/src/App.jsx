@@ -8,14 +8,29 @@ import OfficeHoursPage from "./pages/OfficeHoursPage/OfficeHoursPage";
 import MeetingsPage from "./pages/MeetingsPage/MeetingsPage";
 import MessagesPage from "./pages/MessagesPage/MessagesPage";
 import AnnouncementsPage from "./pages/AnnouncementsPage/AnnouncementsPage";
+import ApplicationsPage from "./pages/ApplicationsPage/ApplicationsPage";
 import RoomBookingsPage from "./pages/RoomBookingsPage/RoomBookingsPage";
 import LeaveRequestsPage from "./pages/LeaveRequestsPage/LeaveRequestsPage";
 import PayrollPage from "./pages/PayrollPage/PayrollPage";
+import StaffDirectoryPage from "./pages/StaffDirectoryPage/StaffDirectoryPage";
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
+import { routeAccess, getDefaultRouteForRole } from "./data/routeAccess";
 
 function isLoggedIn() {
   return Boolean(localStorage.getItem("token"));
+}
+
+function getStoredUser() {
+  try {
+    return JSON.parse(localStorage.getItem("user") || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function getStoredUserRole() {
+  return getStoredUser().role;
 }
 
 function ProtectedRoute() {
@@ -23,7 +38,23 @@ function ProtectedRoute() {
 }
 
 function PublicRoute() {
-  return isLoggedIn() ? <Navigate to="/dashboard" replace /> : <Outlet />;
+  if (!isLoggedIn()) return <Outlet />;
+  const role = getStoredUserRole();
+  return <Navigate to={getDefaultRouteForRole(role)} replace />;
+}
+
+function RoleRoute({ allowedRoles, children }) {
+  const role = getStoredUserRole();
+
+  if (!role) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (allowedRoles && !allowedRoles.includes(role)) {
+    return <Navigate to={getDefaultRouteForRole(role)} replace />;
+  }
+
+  return children;
 }
 
 function App() {
@@ -37,17 +68,110 @@ function App() {
       <Route element={<ProtectedRoute />}>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route element={<AppLayout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/courses" element={<CoursesPage />} />
-          <Route path="/assignments" element={<AssignmentsPage />} />
-          <Route path="/discussions" element={<DiscussionsPage />} />
-          <Route path="/office-hours" element={<OfficeHoursPage />} />
-          <Route path="/meetings" element={<MeetingsPage />} />
-          <Route path="/messages" element={<MessagesPage />} />
-          <Route path="/announcements" element={<AnnouncementsPage />} />
-          <Route path="/room-bookings" element={<RoomBookingsPage />} />
-          <Route path="/leave-requests" element={<LeaveRequestsPage />} />
-          <Route path="/payroll" element={<PayrollPage />} />
+          <Route
+            path="/dashboard"
+            element={(
+              <RoleRoute allowedRoles={routeAccess["/dashboard"]}>
+                <Dashboard />
+              </RoleRoute>
+            )}
+          />
+          <Route
+            path="/courses"
+            element={(
+              <RoleRoute allowedRoles={routeAccess["/courses"]}>
+                <CoursesPage />
+              </RoleRoute>
+            )}
+          />
+          <Route
+            path="/assignments"
+            element={(
+              <RoleRoute allowedRoles={routeAccess["/assignments"]}>
+                <AssignmentsPage />
+              </RoleRoute>
+            )}
+          />
+          <Route
+            path="/discussions"
+            element={(
+              <RoleRoute allowedRoles={routeAccess["/discussions"]}>
+                <DiscussionsPage />
+              </RoleRoute>
+            )}
+          />
+          <Route
+            path="/office-hours"
+            element={(
+              <RoleRoute allowedRoles={routeAccess["/office-hours"]}>
+                <OfficeHoursPage />
+              </RoleRoute>
+            )}
+          />
+          <Route
+            path="/meetings"
+            element={(
+              <RoleRoute allowedRoles={routeAccess["/meetings"]}>
+                <MeetingsPage />
+              </RoleRoute>
+            )}
+          />
+          <Route
+            path="/messages"
+            element={(
+              <RoleRoute allowedRoles={routeAccess["/messages"]}>
+                <MessagesPage />
+              </RoleRoute>
+            )}
+          />
+          <Route
+            path="/announcements"
+            element={(
+              <RoleRoute allowedRoles={routeAccess["/announcements"]}>
+                <AnnouncementsPage />
+              </RoleRoute>
+            )}
+          />
+          <Route
+            path="/applications"
+            element={(
+              <RoleRoute allowedRoles={routeAccess["/applications"]}>
+                <ApplicationsPage />
+              </RoleRoute>
+            )}
+          />
+          <Route
+            path="/room-bookings"
+            element={(
+              <RoleRoute allowedRoles={routeAccess["/room-bookings"]}>
+                <RoomBookingsPage />
+              </RoleRoute>
+            )}
+          />
+          <Route
+            path="/staff-directory"
+            element={(
+              <RoleRoute allowedRoles={routeAccess["/staff-directory"]}>
+                <StaffDirectoryPage />
+              </RoleRoute>
+            )}
+          />
+          <Route
+            path="/leave-requests"
+            element={(
+              <RoleRoute allowedRoles={routeAccess["/leave-requests"]}>
+                <LeaveRequestsPage />
+              </RoleRoute>
+            )}
+          />
+          <Route
+            path="/payroll"
+            element={(
+              <RoleRoute allowedRoles={routeAccess["/payroll"]}>
+                <PayrollPage />
+              </RoleRoute>
+            )}
+          />
         </Route>
       </Route>
 
