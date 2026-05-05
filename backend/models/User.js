@@ -51,6 +51,7 @@ const userSchema = new mongoose.Schema({
   },
   // Profile fields
   phone: String,
+  officeHours: { type: String, trim: true, default: "" },
   address: String,
   dateOfBirth: Date,
   profileImage: String,
@@ -92,6 +93,8 @@ userSchema.methods.getPublicProfile = function () {
     role: this.role,
     department: this.department,
     profileImage: this.profileImage,
+    phone: this.phone,
+    officeHours: this.officeHours,
   };
 };
 
