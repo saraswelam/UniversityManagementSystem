@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { coursesApi, assignmentsApi, announcementsApi } from '../../services/api';
 import './Dashboard.css';
 
@@ -11,6 +12,7 @@ function Dashboard() {
   });
   const [recentAnnouncements, setRecentAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -79,11 +81,15 @@ function Dashboard() {
           {recentAnnouncements.length > 0 ? (
             <div className="announcement-list">
               {recentAnnouncements.map((announcement) => (
-                <div key={announcement._id} className="announcement-item">
+                <div
+                  key={announcement._id}
+                  className={`announcement-item${announcement.pinned ? ' pinned' : ''}${announcement.cancelled ? ' cancelled' : ''}`}
+                >
                   <h4>{announcement.title}</h4>
                   <p>{announcement.content?.substring(0, 100)}...</p>
                   <span className="announcement-date">
-                    {new Date(announcement.createdAt).toLocaleDateString()}
+                    {announcement.date || new Date(announcement.createdAt).toLocaleDateString()}
+                    {announcement.cancelled ? ' • Cancelled' : ''}
                   </span>
                 </div>
               ))}
@@ -96,7 +102,9 @@ function Dashboard() {
         <div className="quick-actions">
           <h3 className="section-title">Quick Actions</h3>
           <div className="action-buttons">
-            <button className="action-btn">➕ Add Course</button>
+            <button className="action-btn" onClick={() => navigate('/courses?new=1')}>
+              ➕ Add Course
+            </button>
             <button className="action-btn">📝 Create Assignment</button>
             <button className="action-btn">📢 Post Announcement</button>
             <button className="action-btn">📅 Schedule Meeting</button>

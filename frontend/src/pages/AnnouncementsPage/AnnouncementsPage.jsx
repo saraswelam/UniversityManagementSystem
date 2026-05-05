@@ -10,8 +10,19 @@ function AnnouncementsPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState(null);
-  const [formData, setFormData] = useState({ title: '', content: '', courseId: '' });
+  const [formData, setFormData] = useState({
+    title: '',
+    content: '',
+    courseId: '',
+    date: new Date().toISOString().split('T')[0],
+    time: '',
+    location: '',
+    pinned: false,
+    cancelled: false,
+  });
   const toast = useToast();
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isAdmin = user.role === 'admin';
 
   useEffect(() => {
     fetchData();
@@ -44,7 +55,16 @@ function AnnouncementsPage() {
       }
       setShowModal(false);
       setEditingAnnouncement(null);
-      setFormData({ title: '', content: '', courseId: '' });
+      setFormData({
+        title: '',
+        content: '',
+        courseId: '',
+        date: new Date().toISOString().split('T')[0],
+        time: '',
+        location: '',
+        pinned: false,
+        cancelled: false,
+      });
       fetchData();
     } catch (error) {
       toast.error(error.message);
@@ -57,6 +77,11 @@ function AnnouncementsPage() {
       title: announcement.title,
       content: announcement.content,
       courseId: announcement.courseId?._id || announcement.courseId || '',
+      date: announcement.date || new Date().toISOString().split('T')[0],
+      time: announcement.time || '',
+      location: announcement.location || '',
+      pinned: Boolean(announcement.pinned),
+      cancelled: Boolean(announcement.cancelled),
     });
     setShowModal(true);
   };
@@ -84,27 +109,56 @@ function AnnouncementsPage() {
     <div className="announcements-page">
       <div className="page-header">
         <h2>Announcements</h2>
-        <button className="add-btn" onClick={() => { setEditingAnnouncement(null); setFormData({ title: '', content: '', courseId: '' }); setShowModal(true); }}>
-          📢 Post Announcement
-        </button>
+        {isAdmin && (
+          <button
+            className="add-btn"
+            onClick={() => {
+              setEditingAnnouncement(null);
+              setFormData({
+                title: '',
+                content: '',
+                courseId: '',
+                date: new Date().toISOString().split('T')[0],
+                time: '',
+                location: '',
+                pinned: false,
+                cancelled: false,
+              });
+              setShowModal(true);
+            }}
+          >
+            📢 Post Announcement
+          </button>
+        )}
       </div>
 
       <div className="announcements-list">
         {announcements.length > 0 ? (
           announcements.map((announcement) => (
-            <div key={announcement._id} className="announcement-card">
+            <div
+              key={announcement._id}
+              className={`announcement-card${announcement.pinned ? ' pinned' : ''}${announcement.cancelled ? ' cancelled' : ''}`}
+            >
               <div className="announcement-header">
                 <span className="announcement-course">{getCourseName(announcement.courseId)}</span>
-                <div className="announcement-actions">
-                  <button onClick={() => handleEdit(announcement)}>✏️</button>
-                  <button onClick={() => handleDelete(announcement._id)}>🗑️</button>
+                <div className="announcement-tags">
+                  {announcement.pinned && <span className="tag pinned">Pinned</span>}
+                  {announcement.cancelled && <span className="tag cancelled">Cancelled</span>}
                 </div>
+                {isAdmin && (
+                  <div className="announcement-actions">
+                    <button onClick={() => handleEdit(announcement)}>✏️</button>
+                    <button onClick={() => handleDelete(announcement._id)}>🗑️</button>
+                  </div>
+                )}
               </div>
               <h3 className="announcement-title">{announcement.title}</h3>
               <p className="announcement-content">{announcement.content}</p>
               <div className="announcement-footer">
                 <span className="announcement-date">
-                  📅 {announcement.createdAt ? new Date(announcement.createdAt).toLocaleDateString() : ''}
+                  📅 {announcement.date || (announcement.createdAt ? new Date(announcement.createdAt).toLocaleDateString() : '')}
+                  {announcement.time ? ` • ${announcement.time}` : ''}
+                  {announcement.location ? ` • ${announcement.location}` : ''}
                 </span>
               </div>
             </div>
@@ -129,9 +183,41 @@ function AnnouncementsPage() {
               ))}
             </select>
           </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label>Date</label>
+              <input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} required />
+            </div>
+            <div className="form-group">
+              <label>Time</label>
+              <input type="time" value={formData.time} onChange={(e) => setFormData({ ...formData, time: e.target.value })} />
+            </div>
+          </div>
+          <div className="form-group">
+            <label>Location</label>
+            <input type="text" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} required />
+          </div>
           <div className="form-group">
             <label>Content</label>
             <textarea value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} rows="5" required />
+          </div>
+          <div className="form-row">
+            <label className="checkbox-field">
+              <input
+                type="checkbox"
+                checked={formData.pinned}
+                onChange={(e) => setFormData({ ...formData, pinned: e.target.checked })}
+              />
+              Pin announcement
+            </label>
+            <label className="checkbox-field">
+              <input
+                type="checkbox"
+                checked={formData.cancelled}
+                onChange={(e) => setFormData({ ...formData, cancelled: e.target.checked })}
+              />
+              Mark as cancelled
+            </label>
           </div>
           <button type="submit" className="submit-btn">{editingAnnouncement ? 'Update' : 'Post'}</button>
         </form>

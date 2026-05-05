@@ -87,6 +87,19 @@
   border-left: 4px solid #e6b800;
 }
 
+.announcement-item.pinned {
+  border-left-color: #dc3545;
+}
+
+.announcement-item.cancelled {
+  opacity: 0.65;
+}
+
+.announcement-item.cancelled h4,
+.announcement-item.cancelled p {
+  text-decoration: line-through;
+}
+
 .announcement-item h4 {
   font-family: 'DM Sans', sans-serif;
   font-size: 16px;

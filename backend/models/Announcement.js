@@ -10,8 +10,11 @@ const announcementSchema = new mongoose.Schema(
       default: null,
     },
     date:     { type: String, default: () => new Date().toISOString().split("T")[0] },
+    time:     { type: String, default: "" },
     location: { type: String, default: "", trim: true },
     pinned:   { type: Boolean, default: false },
+    cancelled:{ type: Boolean, default: false },
+    expiresAt:{ type: Date, default: () => new Date(Date.now() + 48 * 60 * 60 * 1000) },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

@@ -1,13 +1,13 @@
 const express = require("express");
 const Announcement = require("../models/Announcement");
 const Course = require("../models/Course");
-const { ownerFilter, removeUndefined, withOwner } = require("../utils/ownership");
+const { removeUndefined, withOwner } = require("../utils/ownership");
 
 const router = express.Router();
 
 async function validateCourse(req, courseId) {
   if (!courseId) return true;
-  return Boolean(await Course.findOne(ownerFilter(req, { _id: courseId })));
+  return Boolean(await Course.findById(courseId));
 }
 
 function normalizeAnnouncement(announcement) {
@@ -19,7 +19,14 @@ function normalizeAnnouncement(announcement) {
 
 router.get("/", async (req, res) => {
   try {
-    const announcements = await Announcement.find(ownerFilter(req))
+    const now = new Date();
+    const announcements = await Announcement.find({
+      $or: [
+        { expiresAt: { $exists: false } },
+        { expiresAt: null },
+        { expiresAt: { $gte: now } },
+      ],
+    })
       .populate("courseId", "name code")
       .sort({ pinned: -1, createdAt: -1 })
       .lean();
@@ -32,7 +39,10 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const { title, content, courseId, date, location, pinned } = req.body;
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ error: "Only admins can create announcements" });
+    }
+    const { title, content, courseId, date, time, location, pinned, cancelled } = req.body;
     if (!title) return res.status(400).json({ error: "title required" });
 
     if (!(await validateCourse(req, courseId))) {
@@ -44,8 +54,10 @@ router.post("/", async (req, res) => {
       content: content || location || "",
       courseId: courseId || null,
       date,
+      time,
       location,
       pinned,
+      cancelled: Boolean(cancelled),
     }));
 
     res.status(201).json(announcement);
@@ -56,13 +68,16 @@ router.post("/", async (req, res) => {
 
 router.patch("/:id", async (req, res) => {
   try {
-    const { title, content, courseId, date, location, pinned } = req.body;
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ error: "Only admins can update announcements" });
+    }
+    const { title, content, courseId, date, time, location, pinned, cancelled } = req.body;
 
     if (!(await validateCourse(req, courseId))) {
       return res.status(404).json({ error: "Course not found" });
     }
 
-    const updates = removeUndefined({ title, content, courseId, date, location, pinned });
+    const updates = removeUndefined({ title, content, courseId, date, time, location, pinned, cancelled });
     const announcement = await Announcement.findOneAndUpdate(
       ownerFilter(req, { _id: req.params.id }),
       updates,
@@ -78,7 +93,11 @@ router.patch("/:id", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
-    const announcement = await Announcement.findOneAndDelete(ownerFilter(req, { _id: req.params.id }));
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ error: "Only admins can delete announcements" });
+    }
+
+    const announcement = await Announcement.findOneAndDelete({ _id: req.params.id });
     if (!announcement) return res.status(404).json({ error: "Announcement not found" });
 
     res.json({ message: "Deleted" });
