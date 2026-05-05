@@ -9,6 +9,11 @@
   margin-bottom: 24px;
 }
 
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
 .page-header h2 {
   font-family: 'DM Serif Display', serif;
   font-size: 24px;
@@ -31,6 +36,95 @@
 
 .add-btn:hover {
   background-color: #d4a800;
+}
+
+.secondary-btn {
+  padding: 12px 20px;
+  border: 1px solid #1a1a2e;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #1a1a2e;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.secondary-btn:hover {
+  background-color: #1a1a2e;
+  color: #fff;
+}
+
+.rooms-directory {
+  margin-bottom: 32px;
+}
+
+.section-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px;
+  color: #2c3e50;
+  margin: 0 0 16px;
+}
+
+.rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.room-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.room-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.room-capacity {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: #555;
+}
+
+.room-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 18px;
+  margin: 0 0 8px;
+  color: #2c3e50;
+}
+
+.room-empty {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: #999;
+  margin: 0;
+}
+
+.equipment-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.equipment-tag {
+  background: #f1f3f5;
+  color: #333;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+.equipment-tag.removable {
+  border: none;
+  cursor: pointer;
 }
 
 .bookings-grid {
@@ -168,6 +262,29 @@
 .form-group textarea:focus {
   outline: none;
   border-color: #e6b800;
+}
+
+.equipment-input {
+  display: flex;
+  gap: 8px;
+}
+
+.chip-btn {
+  padding: 10px 12px;
+  border: 1px solid #e6b800;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #e6b800;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chip-btn:hover {
+  background-color: #e6b800;
+  color: #1a1a2e;
 }
 
 .form-group small {

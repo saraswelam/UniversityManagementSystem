@@ -1,5 +1,6 @@
 const express = require("express");
 const RoomBooking = require("../models/RoomBooking");
+const Room = require("../models/Room");
 const { ownerFilter, withOwner } = require("../utils/ownership");
 
 const router = express.Router();
@@ -30,16 +31,7 @@ router.get("/available", async (req, res) => {
       status: "active",
     });
 
-    // List of all available rooms
-    const allRooms = [
-      { roomNumber: "101", roomName: "Conference Room A", capacity: 20 },
-      { roomNumber: "102", roomName: "Conference Room B", capacity: 15 },
-      { roomNumber: "103", roomName: "Meeting Room 1", capacity: 10 },
-      { roomNumber: "104", roomName: "Meeting Room 2", capacity: 10 },
-      { roomNumber: "105", roomName: "Training Room", capacity: 30 },
-      { roomNumber: "201", roomName: "Board Room", capacity: 12 },
-      { roomNumber: "202", roomName: "Small Meeting Room", capacity: 6 },
-    ];
+    const allRooms = await Room.find().sort({ roomNumber: 1 });
 
     // Filter out booked rooms
     const bookedRoomNumbers = existingBookings.map(b => b.roomNumber);
@@ -54,10 +46,15 @@ router.get("/available", async (req, res) => {
 // Create a new room booking
 router.post("/", async (req, res) => {
   try {
-    const { roomNumber, roomName, date, startTime, purpose } = req.body;
+    const { roomNumber, date, startTime, purpose } = req.body;
 
-    if (!roomNumber || !roomName || !date || !startTime) {
-      return res.status(400).json({ error: "roomNumber, roomName, date, and startTime are required" });
+    if (!roomNumber || !date || !startTime) {
+      return res.status(400).json({ error: "roomNumber, date, and startTime are required" });
+    }
+
+    const room = await Room.findOne({ roomNumber: roomNumber.trim() });
+    if (!room) {
+      return res.status(400).json({ error: "Room not found" });
     }
 
     // Calculate end time (1 hour session)
@@ -67,7 +64,7 @@ router.post("/", async (req, res) => {
 
     // Check if room is already booked
     const existingBooking = await RoomBooking.findOne({
-      roomNumber,
+      roomNumber: room.roomNumber,
       date,
       startTime,
       status: "active",
@@ -79,8 +76,8 @@ router.post("/", async (req, res) => {
 
     const user = req.user;
     const booking = await RoomBooking.create(withOwner(req, {
-      roomNumber,
-      roomName,
+      roomNumber: room.roomNumber,
+      roomName: room.roomName,
       date,
       startTime,
       endTime,

@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
-import { roomBookingsApi } from '../../services/api';
+import { roomBookingsApi, roomsApi } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
 import Modal from '../../components/Modal';
 import './RoomBookingsPage.css';
 
 function RoomBookingsPage() {
   const [bookings, setBookings] = useState([]);
+  const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showRoomModal, setShowRoomModal] = useState(false);
   const [availableRooms, setAvailableRooms] = useState([]);
   const [formData, setFormData] = useState({
     date: '',
@@ -16,11 +18,21 @@ function RoomBookingsPage() {
     roomName: '',
     purpose: '',
   });
+  const [roomForm, setRoomForm] = useState({
+    roomNumber: '',
+    roomName: '',
+    capacity: '',
+    equipment: [],
+  });
+  const [equipmentInput, setEquipmentInput] = useState('');
   const [checkingAvailability, setCheckingAvailability] = useState(false);
   const toast = useToast();
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isAdmin = user.role === 'admin';
 
   useEffect(() => {
     fetchBookings();
+    fetchRooms();
   }, []);
 
   const fetchBookings = async () => {
@@ -31,6 +43,15 @@ function RoomBookingsPage() {
       toast.error('Failed to load bookings');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRooms = async () => {
+    try {
+      const data = await roomsApi.getAll();
+      setRooms(data);
+    } catch (error) {
+      toast.error('Failed to load rooms');
     }
   };
 
@@ -74,6 +95,29 @@ function RoomBookingsPage() {
     }
   };
 
+  const handleRoomSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!roomForm.roomNumber || !roomForm.roomName || !roomForm.capacity) {
+      toast.error('Room number, name, and capacity are required');
+      return;
+    }
+
+    try {
+      await roomsApi.create({
+        ...roomForm,
+        capacity: Number(roomForm.capacity),
+      });
+      toast.success('Room created successfully');
+      setShowRoomModal(false);
+      setRoomForm({ roomNumber: '', roomName: '', capacity: '', equipment: [] });
+      setEquipmentInput('');
+      fetchRooms();
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
   const handleCancel = async (id) => {
     if (window.confirm('Are you sure you want to cancel this booking?')) {
       try {
@@ -100,15 +144,74 @@ function RoomBookingsPage() {
     setShowModal(true);
   };
 
+  const openRoomModal = () => {
+    setRoomForm({ roomNumber: '', roomName: '', capacity: '', equipment: [] });
+    setEquipmentInput('');
+    setShowRoomModal(true);
+  };
+
+  const addEquipment = () => {
+    const value = equipmentInput.trim();
+    if (!value) return;
+    if (roomForm.equipment.includes(value)) {
+      setEquipmentInput('');
+      return;
+    }
+    setRoomForm({ ...roomForm, equipment: [...roomForm.equipment, value] });
+    setEquipmentInput('');
+  };
+
+  const removeEquipment = (value) => {
+    setRoomForm({
+      ...roomForm,
+      equipment: roomForm.equipment.filter((item) => item !== value),
+    });
+  };
+
   if (loading) return <div className="loading">Loading bookings...</div>;
 
   return (
     <div className="room-bookings-page">
       <div className="page-header">
         <h2>Room Bookings</h2>
-        <button className="add-btn" onClick={openBookingModal}>
-          ➕ Book a Room
-        </button>
+        <div className="header-actions">
+          {isAdmin && (
+            <button className="secondary-btn" onClick={openRoomModal}>
+              ➕ Define Room
+            </button>
+          )}
+          <button className="add-btn" onClick={openBookingModal}>
+            ➕ Book a Room
+          </button>
+        </div>
+      </div>
+
+      <div className="rooms-directory">
+        <h3 className="section-title">Room Directory</h3>
+        <div className="rooms-grid">
+          {rooms.length > 0 ? (
+            rooms.map((room) => (
+              <div key={room._id} className="room-card">
+                <div className="room-card-header">
+                  <span className="room-number">{room.roomNumber}</span>
+                  <span className="room-capacity">{room.capacity} seats</span>
+                </div>
+                <h4 className="room-title">{room.roomName}</h4>
+                {room.equipment?.length > 0 ? (
+                  <div className="equipment-tags">
+                    {room.equipment.map((item) => (
+                      <span key={item} className="equipment-tag">{item}</span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="room-empty">No equipment listed</p>
+                )}
+              </div>
+            ))
+          ) : (
+            <p className="empty-message">No rooms defined yet.</p>
+          )}
+        </div>
       </div>
 
       <div className="bookings-grid">
@@ -187,6 +290,9 @@ function RoomBookingsPage() {
                   >
                     <strong>{room.roomNumber}</strong> - {room.roomName}
                     <small>Capacity: {room.capacity}</small>
+                    {room.equipment?.length > 0 && (
+                      <small>Equipment: {room.equipment.join(', ')}</small>
+                    )}
                   </div>
                 ))}
               </div>
@@ -206,6 +312,68 @@ function RoomBookingsPage() {
           <button type="submit" className="submit-btn" disabled={!formData.roomNumber}>
             Book Room
           </button>
+        </form>
+      </Modal>
+
+      <Modal isOpen={showRoomModal} onClose={() => setShowRoomModal(false)} title="Define Room">
+        <form onSubmit={handleRoomSubmit} className="booking-form">
+          <div className="form-group">
+            <label>Room Number</label>
+            <input
+              type="text"
+              value={roomForm.roomNumber}
+              onChange={(e) => setRoomForm({ ...roomForm, roomNumber: e.target.value })}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Room Name</label>
+            <input
+              type="text"
+              value={roomForm.roomName}
+              onChange={(e) => setRoomForm({ ...roomForm, roomName: e.target.value })}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Max Capacity</label>
+            <input
+              type="number"
+              min="1"
+              value={roomForm.capacity}
+              onChange={(e) => setRoomForm({ ...roomForm, capacity: e.target.value })}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Equipment</label>
+            <div className="equipment-input">
+              <input
+                type="text"
+                value={equipmentInput}
+                onChange={(e) => setEquipmentInput(e.target.value)}
+                placeholder="Projector, PCs, Whiteboard"
+              />
+              <button type="button" className="chip-btn" onClick={addEquipment}>
+                Add
+              </button>
+            </div>
+            {roomForm.equipment.length > 0 && (
+              <div className="equipment-tags">
+                {roomForm.equipment.map((item) => (
+                  <button
+                    type="button"
+                    key={item}
+                    className="equipment-tag removable"
+                    onClick={() => removeEquipment(item)}
+                  >
+                    {item} ✕
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <button type="submit" className="submit-btn">Create Room</button>
         </form>
       </Modal>
     </div>
