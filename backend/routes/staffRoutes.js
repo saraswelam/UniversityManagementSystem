@@ -1,5 +1,6 @@
 const express = require("express");
 const User = require("../models/User");
+const LeaveRequest = require("../models/LeaveRequest");
 
 const router = express.Router();
 
@@ -14,6 +15,40 @@ function requireAdmin(req, res) {
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
+
+function getDateString(value) {
+  if (!value) return new Date().toISOString().split("T")[0];
+  return value;
+}
+
+// Staff availability dashboard (admin only)
+router.get("/availability", async (req, res) => {
+  try {
+    if (!requireAdmin(req, res)) return;
+
+    const date = getDateString(req.query.date);
+    const staff = await User.find({ role: { $in: ["staff", "professor"] } })
+      .select("firstName lastName email phone officeHours role department")
+      .sort({ lastName: 1, firstName: 1 });
+
+    const approvedLeaves = await LeaveRequest.find({
+      status: "approved",
+      startDate: { $lte: date },
+      endDate: { $gte: date },
+    }).select("createdBy");
+
+    const onLeaveIds = new Set(approvedLeaves.map((leave) => String(leave.createdBy)));
+
+    const availability = staff.map((member) => ({
+      ...member.toObject(),
+      availability: onLeaveIds.has(String(member._id)) ? "on_leave" : "active",
+    }));
+
+    res.json({ date, staff: availability });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // Get staff directory (admin only)
 router.get("/", async (req, res) => {
