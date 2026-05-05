@@ -60,6 +60,11 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  studentStatus: {
+    type: String,
+    enum: ["active", "inactive", "graduated", "withdrawn"],
+    default: "active",
+  },
   lastLogin: Date,
 }, {
   timestamps: true,
