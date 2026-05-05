@@ -77,13 +77,53 @@ router.post("/login", async (req, res) => {
 // Register endpoint (for creating new users)
 router.post("/register", async (req, res) => {
   try {
-    const { email, password, role, firstName, lastName, studentId, employeeId, department } = req.body;
+    const {
+      email,
+      password,
+      role,
+      firstName,
+      lastName,
+      studentId,
+      employeeId,
+      department,
+      linkedStudentId,
+      phone,
+      address,
+      dateOfBirth,
+    } = req.body;
 
     // Validate required fields
     if (!email || !password || !role || !firstName || !lastName) {
       return res.status(400).json({ 
         message: "Email, password, role, firstName, and lastName are required" 
       });
+    }
+
+    const allowedRoles = ["admin", "student", "professor", "parent", "staff"];
+    if (!allowedRoles.includes(role)) {
+      return res.status(400).json({ message: "Invalid role selected" });
+    }
+
+    if (role === "student" && (!studentId || !department)) {
+      return res.status(400).json({ message: "Student ID and department are required for students" });
+    }
+
+    if (["professor", "staff"].includes(role) && (!employeeId || !department)) {
+      return res.status(400).json({ message: "Employee ID and department are required for this role" });
+    }
+
+    let linkedStudentObjectId;
+    if (role === "parent") {
+      if (!linkedStudentId) {
+        return res.status(400).json({ message: "Child Student ID is required for parents" });
+      }
+
+      const linkedStudent = await User.findOne({ role: "student", studentId: linkedStudentId });
+      if (!linkedStudent) {
+        return res.status(400).json({ message: "No student account found with that Student ID" });
+      }
+
+      linkedStudentObjectId = linkedStudent._id;
     }
 
     // Check if user already exists
@@ -108,7 +148,11 @@ router.post("/register", async (req, res) => {
       lastName,
       studentId: role === "student" ? studentId : undefined,
       employeeId: ["professor", "staff"].includes(role) ? employeeId : undefined,
-      department,
+      department: ["student", "professor", "staff"].includes(role) ? department : undefined,
+      linkedStudentId: linkedStudentObjectId,
+      phone: phone || undefined,
+      address: role === "parent" ? address : undefined,
+      dateOfBirth: role === "student" && dateOfBirth ? dateOfBirth : undefined,
     });
 
     await user.save();

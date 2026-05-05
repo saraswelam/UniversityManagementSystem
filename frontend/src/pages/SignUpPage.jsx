@@ -3,6 +3,32 @@ import { useNavigate, Link } from "react-router-dom";
 import { roles } from "../data/roles.js";
 import { authApi } from "../services/api.js";
 
+const roleFields = {
+  student: [
+    { name: "studentId", label: "Student ID", placeholder: "STU001", required: true },
+    { name: "department", label: "Department", placeholder: "Computer Science", required: true },
+    { name: "dateOfBirth", label: "Date of Birth", type: "date" },
+  ],
+  professor: [
+    { name: "employeeId", label: "Employee ID", placeholder: "EMP002", required: true },
+    { name: "department", label: "Department", placeholder: "Computer Science", required: true },
+    { name: "phone", label: "Phone", placeholder: "+20 100 000 0000", type: "tel" },
+  ],
+  admin: [],
+  staff: [
+    { name: "employeeId", label: "Employee ID", placeholder: "EMP003", required: true },
+    { name: "department", label: "Department", placeholder: "Registrar", required: true },
+    { name: "phone", label: "Phone", placeholder: "+20 100 000 0000", type: "tel" },
+  ],
+  parent: [
+    { name: "linkedStudentId", label: "Child Student ID", placeholder: "STU001", required: true },
+    { name: "phone", label: "Phone", placeholder: "+20 100 000 0000", type: "tel" },
+    { name: "address", label: "Address", placeholder: "Home address" },
+  ],
+};
+
+const roleFieldNames = [...new Set(Object.values(roleFields).flat().map((field) => field.name))];
+
 function SignUpPage() {
   const [formData, setFormData] = useState({
     firstName: "",
@@ -14,6 +40,10 @@ function SignUpPage() {
     studentId: "",
     employeeId: "",
     department: "",
+    linkedStudentId: "",
+    phone: "",
+    address: "",
+    dateOfBirth: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -24,6 +54,34 @@ function SignUpPage() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleRoleChange = (role) => {
+    setFormData((prev) => ({
+      ...prev,
+      role,
+      ...Object.fromEntries(roleFieldNames.map((fieldName) => [fieldName, ""])),
+    }));
+  };
+
+  const buildRegistrationPayload = () => {
+    const activeRoleFields = roleFields[formData.role] || [];
+    const payload = {
+      firstName: formData.firstName.trim(),
+      lastName: formData.lastName.trim(),
+      email: formData.email.trim(),
+      password: formData.password,
+      role: formData.role,
+    };
+
+    activeRoleFields.forEach((field) => {
+      const value = formData[field.name]?.trim();
+      if (value) {
+        payload[field.name] = value;
+      }
+    });
+
+    return payload;
   };
 
   const handleSubmit = async (e) => {
@@ -42,19 +100,19 @@ function SignUpPage() {
       return;
     }
 
+    const missingField = (roleFields[formData.role] || []).find(
+      (field) => field.required && !formData[field.name].trim()
+    );
+
+    if (missingField) {
+      setError(`${missingField.label} is required for ${activeRole.label} accounts`);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const response = await authApi.register({
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password,
-        role: formData.role,
-        studentId: formData.role === "student" ? formData.studentId : undefined,
-        employeeId: ["professor", "staff"].includes(formData.role) ? formData.employeeId : undefined,
-        department: formData.department,
-      });
+      const response = await authApi.register(buildRegistrationPayload());
 
       // Store token and user data
       localStorage.setItem("token", response.token);
@@ -89,7 +147,7 @@ function SignUpPage() {
                   key={role.id}
                   type="button"
                   className={`role-option ${formData.role === role.id ? "active" : ""}`}
-                  onClick={() => setFormData((prev) => ({ ...prev, role: role.id }))}
+                  onClick={() => handleRoleChange(role.id)}
                   disabled={isLoading}
                 >
                   {role.label}
@@ -140,49 +198,20 @@ function SignUpPage() {
             />
           </label>
 
-          {/* Role-specific ID */}
-          {formData.role === "student" && (
-            <label>
-              Student ID
+          {(roleFields[formData.role] || []).map((field) => (
+            <label key={field.name}>
+              {field.label}
               <input
-                name="studentId"
-                placeholder="STU001"
-                type="text"
-                value={formData.studentId}
+                name={field.name}
+                placeholder={field.placeholder}
+                type={field.type || "text"}
+                value={formData[field.name]}
                 onChange={handleChange}
-                required
+                required={Boolean(field.required)}
                 disabled={isLoading}
               />
             </label>
-          )}
-
-          {["professor", "staff"].includes(formData.role) && (
-            <label>
-              Employee ID
-              <input
-                name="employeeId"
-                placeholder="EMP001"
-                type="text"
-                value={formData.employeeId}
-                onChange={handleChange}
-                required
-                disabled={isLoading}
-              />
-            </label>
-          )}
-
-          {/* Department */}
-          <label>
-            Department
-            <input
-              name="department"
-              placeholder="Computer Science"
-              type="text"
-              value={formData.department}
-              onChange={handleChange}
-              disabled={isLoading}
-            />
-          </label>
+          ))}
 
           {/* Password */}
           <label>
