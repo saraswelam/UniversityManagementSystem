@@ -11,9 +11,11 @@ router.get("/", async (req, res) => {
     const departmentFilter = req.query.department
       ? { department: req.query.department.trim() }
       : {};
+    const typeFilter = req.query.type ? { type: req.query.type.trim() } : {};
     const courses = await Course.find({
       ...professorFilter,
       ...departmentFilter,
+      ...typeFilter,
     }).sort({ createdAt: -1 });
     res.json(courses);
   } catch (err) {
@@ -38,7 +40,17 @@ router.post("/", async (req, res) => {
       return res.status(403).json({ error: "Only admins can create courses" });
     }
 
-    const { name, code, description, department, creditHours, type, enrollmentCap } = req.body;
+    const {
+      name,
+      code,
+      description,
+      department,
+      creditHours,
+      type,
+      enrollmentCap,
+      registrationStart,
+      registrationEnd,
+    } = req.body;
 
     if (!name || !code || !department) {
       return res.status(400).json({ error: "name, code, department required" });
@@ -53,6 +65,21 @@ router.post("/", async (req, res) => {
     const creditHoursValue = creditHours === undefined || creditHours === ""
       ? undefined
       : Number(creditHours);
+    const enrollmentCapValue = enrollmentCap === undefined || enrollmentCap === ""
+      ? undefined
+      : Number(enrollmentCap);
+    const registrationStartValue = registrationStart ? new Date(registrationStart) : null;
+    const registrationEndValue = registrationEnd ? new Date(registrationEnd) : null;
+
+    if (registrationStart && Number.isNaN(registrationStartValue?.getTime())) {
+      return res.status(400).json({ error: "Invalid registrationStart date" });
+    }
+    if (registrationEnd && Number.isNaN(registrationEndValue?.getTime())) {
+      return res.status(400).json({ error: "Invalid registrationEnd date" });
+    }
+    if (registrationStartValue && registrationEndValue && registrationStartValue > registrationEndValue) {
+      return res.status(400).json({ error: "Registration start must be before end" });
+    }
 
     const course = await Course.create(withOwner(req, {
       name,
@@ -61,7 +88,9 @@ router.post("/", async (req, res) => {
       department: department.trim(),
       creditHours: creditHoursValue,
       type,
-      enrollmentCap,
+      enrollmentCap: enrollmentCapValue,
+      registrationStart: registrationStartValue,
+      registrationEnd: registrationEndValue,
       professor: req.user.role === "professor" ? req.user.email : undefined,
     }));
 
@@ -80,12 +109,37 @@ router.patch("/:id", async (req, res) => {
       return res.status(403).json({ error: "Only admins can update courses" });
     }
 
-    const { name, code, description, department, creditHours, type, enrollmentCap } = req.body;
+    const {
+      name,
+      code,
+      description,
+      department,
+      creditHours,
+      type,
+      enrollmentCap,
+      registrationStart,
+      registrationEnd,
+    } = req.body;
     const normalizedCode = code ? code.trim().toUpperCase() : undefined;
     const normalizedDepartment = department ? department.trim() : undefined;
     const creditHoursValue = creditHours === undefined || creditHours === ""
       ? undefined
       : Number(creditHours);
+    const enrollmentCapValue = enrollmentCap === undefined || enrollmentCap === ""
+      ? undefined
+      : Number(enrollmentCap);
+    const registrationStartValue = registrationStart === "" ? null : (registrationStart ? new Date(registrationStart) : undefined);
+    const registrationEndValue = registrationEnd === "" ? null : (registrationEnd ? new Date(registrationEnd) : undefined);
+
+    if (registrationStart && Number.isNaN(registrationStartValue?.getTime())) {
+      return res.status(400).json({ error: "Invalid registrationStart date" });
+    }
+    if (registrationEnd && Number.isNaN(registrationEndValue?.getTime())) {
+      return res.status(400).json({ error: "Invalid registrationEnd date" });
+    }
+    if (registrationStartValue && registrationEndValue && registrationStartValue > registrationEndValue) {
+      return res.status(400).json({ error: "Registration start must be before end" });
+    }
 
     if (normalizedCode) {
       const existing = await Course.findOne({
@@ -104,7 +158,9 @@ router.patch("/:id", async (req, res) => {
       department: normalizedDepartment,
       creditHours: creditHoursValue,
       type,
-      enrollmentCap,
+      enrollmentCap: enrollmentCapValue,
+      registrationStart: registrationStartValue,
+      registrationEnd: registrationEndValue,
     });
 
     const course = await Course.findByIdAndUpdate(

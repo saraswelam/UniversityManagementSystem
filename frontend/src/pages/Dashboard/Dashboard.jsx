@@ -9,6 +9,7 @@ function Dashboard() {
     assignments: 0,
     announcements: 0,
     upcomingMeetings: 0,
+    electiveRegistration: 'Closed',
   });
   const [recentAnnouncements, setRecentAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,11 +23,22 @@ function Dashboard() {
           assignmentsApi.getAll(),
           announcementsApi.getAll(),
         ]);
+        const now = new Date();
+        const electives = courses.filter((course) => course.type === 'elective');
+        const isRegistrationOpen = electives.some((course) => {
+          const start = course.registrationStart ? new Date(course.registrationStart) : null;
+          const end = course.registrationEnd ? new Date(course.registrationEnd) : null;
+
+          if (start && now < start) return false;
+          if (end && now > end) return false;
+          return true;
+        });
         setStats({
           courses: courses.length || 0,
           assignments: assignments.length || 0,
           announcements: announcements.length || 0,
           upcomingMeetings: 0,
+          electiveRegistration: electives.length > 0 && isRegistrationOpen ? 'Open' : 'Closed',
         });
         setRecentAnnouncements(announcements.slice(0, 3));
       } catch (error) {
@@ -71,6 +83,13 @@ function Dashboard() {
           <div className="stat-info">
             <span className="stat-value">{stats.upcomingMeetings}</span>
             <span className="stat-label">Upcoming Meetings</span>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon">🧾</div>
+          <div className="stat-info">
+            <span className="stat-value">{stats.electiveRegistration}</span>
+            <span className="stat-label">Elective Registration</span>
           </div>
         </div>
       </div>

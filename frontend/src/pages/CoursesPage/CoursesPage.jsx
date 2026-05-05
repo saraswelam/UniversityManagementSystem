@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { coursesApi, staffApi } from '../../services/api';
+import { coursesApi, staffApi, enrollmentsApi } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
 import Modal from '../../components/Modal';
 import { departments } from '../../data/departments';
@@ -10,6 +10,7 @@ function CoursesPage() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedDepartment, setSelectedDepartment] = useState('all');
+  const [selectedType, setSelectedType] = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [editingCourse, setEditingCourse] = useState(null);
   const [showAssignModal, setShowAssignModal] = useState(false);
@@ -17,18 +18,28 @@ function CoursesPage() {
   const [selectedProfessor, setSelectedProfessor] = useState('');
   const [professors, setProfessors] = useState([]);
   const [assigning, setAssigning] = useState(false);
+  const [studentEnrollments, setStudentEnrollments] = useState([]);
+  const [enrollingCourseId, setEnrollingCourseId] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     code: '',
     description: '',
     department: departments[0] || 'General',
     creditHours: 3,
+    type: 'core',
+    enrollmentCap: 40,
+    registrationStart: '',
+    registrationEnd: '',
   });
   const toast = useToast();
   const location = useLocation();
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isAdmin = user.role === 'admin';
+  const isStudent = user.role === 'student';
+  const mandatoryCourses = isStudent && user.department
+    ? courses.filter((course) => course.type === 'core' && course.department === user.department)
+    : [];
   const departmentOptions = Array.from(new Set([
     ...departments,
     ...courses.map((course) => course.department).filter(Boolean),
@@ -37,12 +48,17 @@ function CoursesPage() {
 
   useEffect(() => {
     fetchCourses();
-  }, [selectedDepartment]);
+  }, [selectedDepartment, selectedType]);
 
   useEffect(() => {
     if (!isAdmin) return;
     fetchProfessors();
   }, [isAdmin]);
+
+  useEffect(() => {
+    if (!isStudent) return;
+    fetchEnrollments();
+  }, [isStudent]);
 
   useEffect(() => {
     if (!openFromQuery || !isAdmin) return;
@@ -54,6 +70,10 @@ function CoursesPage() {
       description: '',
       department: departments[0] || 'General',
       creditHours: 3,
+      type: 'core',
+      enrollmentCap: 40,
+      registrationStart: '',
+      registrationEnd: '',
     });
     setShowModal(true);
     navigate('/courses', { replace: true });
@@ -63,12 +83,22 @@ function CoursesPage() {
     setLoading(true);
     try {
       const departmentFilter = selectedDepartment === 'all' ? undefined : selectedDepartment;
-      const data = await coursesApi.getAll(departmentFilter);
+      const typeFilter = selectedType === 'all' ? undefined : selectedType;
+      const data = await coursesApi.getAll(departmentFilter, typeFilter);
       setCourses(data);
     } catch (error) {
       toast.error('Failed to load courses');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchEnrollments = async () => {
+    try {
+      const data = await enrollmentsApi.getMine();
+      setStudentEnrollments(data);
+    } catch (error) {
+      toast.error('Failed to load enrollments');
     }
   };
 
@@ -108,6 +138,10 @@ function CoursesPage() {
         description: '',
         department: departments[0] || 'General',
         creditHours: 3,
+        type: 'core',
+        enrollmentCap: 40,
+        registrationStart: '',
+        registrationEnd: '',
       });
       fetchCourses();
     } catch (error) {
@@ -124,6 +158,10 @@ function CoursesPage() {
       description: course.description,
       department: course.department || departments[0] || 'General',
       creditHours: course.creditHours ?? 3,
+      type: course.type || 'core',
+      enrollmentCap: course.enrollmentCap ?? 40,
+      registrationStart: course.registrationStart ? course.registrationStart.split('T')[0] : '',
+      registrationEnd: course.registrationEnd ? course.registrationEnd.split('T')[0] : '',
     });
     setShowModal(true);
   };
@@ -174,6 +212,45 @@ function CoursesPage() {
     }
   };
 
+  const isCourseEnrolled = (courseId) => studentEnrollments.some((enrollment) => {
+    const enrolledCourse = enrollment.course?._id || enrollment.course;
+    return enrolledCourse === courseId;
+  });
+
+  const isRegistrationOpen = (course) => {
+    const now = new Date();
+    const start = course.registrationStart ? new Date(course.registrationStart) : null;
+    const end = course.registrationEnd ? new Date(course.registrationEnd) : null;
+
+    if (start && now < start) return false;
+    if (end && now > end) return false;
+    return true;
+  };
+
+  const getRegistrationLabel = (course) => {
+    const start = course.registrationStart ? new Date(course.registrationStart) : null;
+    const end = course.registrationEnd ? new Date(course.registrationEnd) : null;
+
+    if (!start && !end) return 'Open';
+    const startLabel = start ? start.toLocaleDateString() : 'Anytime';
+    const endLabel = end ? end.toLocaleDateString() : 'No end';
+    return `${startLabel} - ${endLabel}`;
+  };
+
+  const handleEnroll = async (course) => {
+    if (!isStudent) return;
+    setEnrollingCourseId(course._id);
+    try {
+      await enrollmentsApi.create(course._id);
+      toast.success('Enrollment confirmed');
+      await Promise.all([fetchCourses(), fetchEnrollments()]);
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setEnrollingCourseId(null);
+    }
+  };
+
   if (loading) return <div className="loading">Loading courses...</div>;
 
   return (
@@ -191,6 +268,10 @@ function CoursesPage() {
                 description: '',
                 department: departments[0] || 'General',
                 creditHours: 3,
+                type: 'core',
+                enrollmentCap: 40,
+                registrationStart: '',
+                registrationEnd: '',
               });
               setShowModal(true);
             }}
@@ -199,6 +280,24 @@ function CoursesPage() {
           </button>
         )}
       </div>
+
+      {isStudent && user.department && (
+        <div className="mandatory-section">
+          <h3>Mandatory Courses ({user.department})</h3>
+          {mandatoryCourses.length > 0 ? (
+            <ul className="mandatory-list">
+              {mandatoryCourses.map((course) => (
+                <li key={course._id}>
+                  <span className="mandatory-code">{course.code}</span>
+                  <span className="mandatory-name">{course.name}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="empty-message">No mandatory courses found for your department.</p>
+          )}
+        </div>
+      )}
 
       <div className="filters">
         <div className="filter-group">
@@ -213,6 +312,17 @@ function CoursesPage() {
                 {department}
               </option>
             ))}
+          </select>
+        </div>
+        <div className="filter-group">
+          <label>Type</label>
+          <select
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
+          >
+            <option value="all">All Types</option>
+            <option value="core">Core</option>
+            <option value="elective">Elective</option>
           </select>
         </div>
       </div>
@@ -236,6 +346,20 @@ function CoursesPage() {
                 <span className="course-department">{course.department}</span>
                 <span className="course-hours">{course.creditHours} credit hours</span>
               </div>
+              <div className="course-tags">
+                <span className={`course-type ${course.type}`}>{course.type || 'core'}</span>
+                {course.type === 'elective' && (
+                  <span className="course-capacity">
+                    Capacity: {course.enrolledCount ?? 0}/{course.enrollmentCap ?? 0}
+                  </span>
+                )}
+              </div>
+              {course.type === 'elective' && (
+                <div className="course-registration">
+                  <span>Registration:</span>
+                  <span>{getRegistrationLabel(course)}</span>
+                </div>
+              )}
               <div className="course-professor">
                 <span>Professor:</span>
                 <span>{course.professor || 'Unassigned'}</span>
@@ -243,6 +367,26 @@ function CoursesPage() {
               {isAdmin && (
                 <button className="assign-btn" onClick={() => openAssignModal(course)}>
                   Assign Professor
+                </button>
+              )}
+              {isStudent && course.type === 'elective' && (
+                <button
+                  className="enroll-btn"
+                  onClick={() => handleEnroll(course)}
+                  disabled={
+                    enrollingCourseId === course._id
+                    || isCourseEnrolled(course._id)
+                    || (course.enrollmentCap !== null && course.enrolledCount >= course.enrollmentCap)
+                    || !isRegistrationOpen(course)
+                  }
+                >
+                  {isCourseEnrolled(course._id)
+                    ? 'Enrolled'
+                    : (course.enrollmentCap !== null && course.enrolledCount >= course.enrollmentCap)
+                      ? 'Course Full'
+                      : !isRegistrationOpen(course)
+                        ? 'Registration Closed'
+                        : (enrollingCourseId === course._id ? 'Enrolling...' : 'Enroll')}
                 </button>
               )}
             </div>
@@ -286,6 +430,49 @@ function CoursesPage() {
               required
             />
           </div>
+          <div className="form-group">
+            <label>Course Type</label>
+            <select
+              value={formData.type}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+              required
+            >
+              <option value="core">Core</option>
+              <option value="elective">Elective</option>
+            </select>
+          </div>
+          {formData.type === 'elective' && (
+            <>
+              <div className="form-group">
+                <label>Maximum Capacity</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={formData.enrollmentCap}
+                  onChange={(e) => setFormData({ ...formData, enrollmentCap: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Registration Start</label>
+                  <input
+                    type="date"
+                    value={formData.registrationStart}
+                    onChange={(e) => setFormData({ ...formData, registrationStart: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Registration End</label>
+                  <input
+                    type="date"
+                    value={formData.registrationEnd}
+                    onChange={(e) => setFormData({ ...formData, registrationEnd: e.target.value })}
+                  />
+                </div>
+              </div>
+            </>
+          )}
           <div className="form-group">
             <label>Description</label>
             <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows="3" />

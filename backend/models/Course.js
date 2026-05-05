@@ -10,6 +10,8 @@ const courseSchema = new mongoose.Schema(
     type:          { type: String, enum: ["core", "elective"], default: "core" },
     enrollmentCap: { type: Number, default: 40, min: 1 },
     enrolledCount: { type: Number, default: 0 },
+    registrationStart: { type: Date, default: null },
+    registrationEnd: { type: Date, default: null },
     professor:     { type: String, trim: true, default: null },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
