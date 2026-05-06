@@ -121,9 +121,7 @@ function Dashboard() {
         <div className="quick-actions">
           <h3 className="section-title">Quick Actions</h3>
           <div className="action-buttons">
-            <button className="action-btn" onClick={() => navigate('/courses?new=1')}>
-              ➕ Add Course
-            </button>
+            
             <button className="action-btn">📝 Create Assignment</button>
             <button className="action-btn">📢 Post Announcement</button>
             <button className="action-btn">📅 Schedule Meeting</button>
