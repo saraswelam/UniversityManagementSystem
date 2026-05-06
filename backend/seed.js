@@ -4,6 +4,30 @@ const User = require("./models/User");
 
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/ums";
 const MONGODB_DB_NAME = process.env.MONGODB_DB_NAME || "ums";
+const SYSTEM_ADMIN = {
+  email: "sara.swelam@gmail.com",
+  password: "adminsara",
+  role: "admin",
+  firstName: "Sara",
+  lastName: "Swelam",
+};
+
+async function ensureSystemAdmin() {
+  await User.deleteMany({ role: "admin", email: { $ne: SYSTEM_ADMIN.email } });
+
+  const admin = await User.findOne({ email: SYSTEM_ADMIN.email });
+  if (admin) {
+    admin.password = SYSTEM_ADMIN.password;
+    admin.role = "admin";
+    admin.firstName = SYSTEM_ADMIN.firstName;
+    admin.lastName = SYSTEM_ADMIN.lastName;
+    admin.isActive = true;
+    await admin.save();
+    return;
+  }
+
+  await new User(SYSTEM_ADMIN).save();
+}
 
 async function seed() {
   try {
@@ -12,6 +36,7 @@ async function seed() {
       authSource: process.env.MONGODB_AUTH_SOURCE || "admin",
     });
     console.log("Connected to MongoDB");
+    await ensureSystemAdmin();
 
     // Check if test user already exists
     const existingUser = await User.findOne({ email: "professor@university.edu" });
@@ -38,15 +63,6 @@ async function seed() {
     } else {
       // Create test users for each role
       const testUsers = [
-        {
-          email: "admin@university.edu",
-          password: "password123",
-          role: "admin",
-          firstName: "Admin",
-          lastName: "User",
-          employeeId: "EMP001",
-          department: "Administration",
-        },
         {
           email: "professor@university.edu",
           password: "password123",
@@ -101,6 +117,7 @@ async function seed() {
     }
 
     console.log("\n=== Test Credentials ===");
+    console.log("Admin: sara.swelam@gmail.com / adminsara");
     console.log("Professor: professor@university.edu / password123");
     console.log("Student: student@university.edu / password123");
     console.log("Parent: parent@university.edu / password123 (linked to Jane Doe)");

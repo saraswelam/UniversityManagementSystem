@@ -1,7 +1,9 @@
+import { getAuthToken } from "../auth/authStorage.js";
+
 const API_BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace(/\/$/, "");
 
 function getToken() {
-  return localStorage.getItem("token");
+  return getAuthToken();
 }
 
 async function request(path, options = {}) {
@@ -212,20 +214,14 @@ export const announcementsApi = {
 
 export const messagesApi = {
   getAll: () => request("/messages"),
-  send: (data) => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const sender = [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email || "Unknown";
-
-    return request("/messages", {
+  send: (data) => request("/messages", {
       method: "POST",
       body: JSON.stringify({
-        from: sender,
         to: data.recipient,
         subject: data.subject,
         content: data.content,
       }),
-    });
-  },
+    }),
   markAsRead: (id) => request(`/messages/${id}/read`, { method: "PATCH" }),
   delete: (id) => request(`/messages/${id}`, { method: "DELETE" }),
 };

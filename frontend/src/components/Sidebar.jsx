@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
 import { getRoleLabel } from '../data/roles';
 import './Sidebar.css';
 
@@ -22,13 +23,12 @@ const menuItems = [
 ];
 
 function Sidebar() {
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const { user = {}, logout } = useAuth();
   const role = user.role || 'student';
   const visibleItems = menuItems.filter((item) => item.roles.includes(role));
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    logout();
     window.location.href = '/login';
   };
 

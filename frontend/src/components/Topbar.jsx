@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
 import { getRoleLabel } from '../data/roles';
 import './Topbar.css';
 
@@ -20,15 +21,14 @@ const pageTitles = {
 function Topbar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const { user = {}, logout } = useAuth();
   const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ');
   const displayName = fullName || user.email || 'User';
 
   const getPageTitle = () => pageTitles[location.pathname] || 'Dashboard';
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    logout();
     navigate('/login', { replace: true });
   };
 

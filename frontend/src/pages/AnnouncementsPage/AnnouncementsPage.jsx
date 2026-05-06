@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { announcementsApi, coursesApi } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
+import { useAuth } from '../../auth/AuthContext';
 import Modal from '../../components/Modal';
 import './AnnouncementsPage.css';
 
@@ -21,7 +22,7 @@ function AnnouncementsPage() {
     cancelled: false,
   });
   const toast = useToast();
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const { user = {} } = useAuth();
   const isAdmin = user.role === 'admin';
 
   useEffect(() => {

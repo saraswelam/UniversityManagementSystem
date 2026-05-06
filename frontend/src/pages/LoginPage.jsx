@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import LoginForm from "../components/login/LoginForm.jsx";
 import { roles } from "../data/roles.js";
 import { getDefaultRouteForRole } from "../data/routeAccess.js";
+import { useAuth } from "../auth/AuthContext.jsx";
 import { authApi } from "../services/api.js";
 import "../styles/LoginPage.css";
 
@@ -11,6 +12,7 @@ function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { login } = useAuth();
   
   const activeRole = roles.find((role) => role.id === selectedRole) || roles[0];
 
@@ -33,9 +35,7 @@ function LoginPage() {
         role: selectedRole,
       });
       
-      // Store token and user data
-      localStorage.setItem("token", response.token);
-      localStorage.setItem("user", JSON.stringify(response.user));
+      login(response);
       
       // Redirect based on role
       navigate(getDefaultRouteForRole(response.user?.role), { replace: true });

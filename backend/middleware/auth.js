@@ -1,8 +1,9 @@
 const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
 
-function requireAuth(req, res, next) {
+async function requireAuth(req, res, next) {
   const header = req.headers.authorization || "";
   const token = header.startsWith("Bearer ") ? header.slice(7) : null;
 
@@ -11,7 +12,18 @@ function requireAuth(req, res, next) {
   }
 
   try {
-    req.user = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = await User.findById(decoded.id).select("-password");
+
+    if (!user || !user.isActive) {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+
+    req.auth = decoded;
+    req.user = {
+      ...user.toObject(),
+      id: String(user._id),
+    };
     next();
   } catch {
     res.status(401).json({ message: "Invalid token" });

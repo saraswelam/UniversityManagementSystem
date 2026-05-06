@@ -4,6 +4,15 @@ const User = require("../models/User");
 const router = express.Router();
 
 const allowedStatuses = ["active", "inactive", "graduated", "withdrawn"];
+const studentSelect = "firstName lastName email studentId department studentStatus studentsStatus";
+
+function normalizeStudent(student) {
+  const object = student.toObject ? student.toObject() : student;
+  return {
+    ...object,
+    studentStatus: object.studentStatus || object.studentsStatus || "active",
+  };
+}
 
 function requireAdmin(req, res) {
   if (req.user?.role !== "admin") {
@@ -24,14 +33,18 @@ router.get("/", async (req, res) => {
       if (!allowedStatuses.includes(status)) {
         return res.status(400).json({ error: "Invalid status filter" });
       }
-      filter.studentStatus = status;
+      filter.$or = [
+        { studentStatus: status },
+        { studentsStatus: status },
+        ...(status === "active" ? [{ studentStatus: { $exists: false }, studentsStatus: { $exists: false } }] : []),
+      ];
     }
 
     const students = await User.find(filter)
-      .select("firstName lastName email studentId department studentStatus")
+      .select(studentSelect)
       .sort({ lastName: 1, firstName: 1 });
 
-    res.json(students);
+    res.json(students.map(normalizeStudent));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -48,13 +61,13 @@ router.patch("/:id/status", async (req, res) => {
 
     const student = await User.findOneAndUpdate(
       { _id: req.params.id, role: "student" },
-      { studentStatus: status },
+      { studentStatus: status, studentsStatus: status },
       { new: true, runValidators: true }
-    ).select("firstName lastName email studentId department studentStatus");
+    ).select(studentSelect);
 
     if (!student) return res.status(404).json({ error: "Student not found" });
 
-    res.json(student);
+    res.json(normalizeStudent(student));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

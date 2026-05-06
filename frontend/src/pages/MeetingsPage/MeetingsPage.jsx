@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { meetingsApi } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
+import { useAuth } from '../../auth/AuthContext';
 import Modal from '../../components/Modal';
 import './MeetingsPage.css';
 
@@ -11,7 +12,7 @@ function MeetingsPage() {
   const [editingMeeting, setEditingMeeting] = useState(null);
   const [formData, setFormData] = useState({ title: '', date: '', time: '', link: '', description: '' });
   const toast = useToast();
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const { user = {} } = useAuth();
   const isAdmin = user.role === 'admin';
 
   useEffect(() => {

@@ -1,9 +1,10 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
-const { JWT_SECRET } = require("../middleware/auth");
+const { JWT_SECRET, requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
+const FIXED_ADMIN_EMAIL = "sara.swelam@gmail.com";
 
 // Login endpoint
 router.post("/login", async (req, res) => {
@@ -17,12 +18,15 @@ router.post("/login", async (req, res) => {
       });
     }
 
+    const normalizedIdentifier = identifier.trim();
+    const normalizedEmail = normalizedIdentifier.toLowerCase();
+
     // Find user by email or ID
     let user = await User.findOne({ 
       $or: [
-        { email: identifier },
-        { studentId: identifier },
-        { employeeId: identifier }
+        { email: normalizedEmail },
+        { studentId: normalizedIdentifier },
+        { employeeId: normalizedIdentifier }
       ]
     });
 
@@ -46,6 +50,10 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ 
         message: `Invalid role. Your account is registered as ${user.role}` 
       });
+    }
+
+    if (role === "admin" && user.email !== FIXED_ADMIN_EMAIL) {
+      return res.status(403).json({ message: "Admin access is restricted to the system admin account" });
     }
 
     // Update last login
@@ -78,7 +86,7 @@ router.post("/login", async (req, res) => {
 router.post("/register", async (req, res) => {
   try {
     const {
-      email,
+      email: rawEmail,
       password,
       role,
       firstName,
@@ -93,13 +101,19 @@ router.post("/register", async (req, res) => {
     } = req.body;
 
     // Validate required fields
-    if (!email || !password || !role || !firstName || !lastName) {
+    if (!rawEmail || !password || !role || !firstName || !lastName) {
       return res.status(400).json({ 
         message: "Email, password, role, firstName, and lastName are required" 
       });
     }
 
-    const allowedRoles = ["admin", "student", "professor", "parent", "staff"];
+    const email = rawEmail.toLowerCase().trim();
+
+    if (role === "admin") {
+      return res.status(403).json({ message: "Admin registration is disabled" });
+    }
+
+    const allowedRoles = ["student", "professor", "parent", "staff"];
     if (!allowedRoles.includes(role)) {
       return res.status(400).json({ message: "Invalid role selected" });
     }
@@ -127,7 +141,7 @@ router.post("/register", async (req, res) => {
     }
 
     // Check if user already exists
-    const existingUser = await User.findOne({ 
+    const existingUser = await User.findOne({
       $or: [
         { email },
         ...(studentId ? [{ studentId }] : []),
@@ -147,6 +161,7 @@ router.post("/register", async (req, res) => {
       firstName,
       lastName,
       studentId: role === "student" ? studentId : undefined,
+      studentsStatus: role === "student" ? "active" : undefined,
       employeeId: ["professor", "staff"].includes(role) ? employeeId : undefined,
       department: ["student", "professor", "staff"].includes(role) ? department : undefined,
       linkedStudentId: linkedStudentObjectId,
@@ -181,24 +196,12 @@ router.post("/logout", (req, res) => {
 });
 
 // Get current user
-router.get("/me", async (req, res) => {
+router.get("/me", requireAuth, async (req, res) => {
   try {
-    const token = req.headers.authorization?.replace("Bearer ", "");
-    
-    if (!token) {
-      return res.status(401).json({ message: "No token provided" });
-    }
-
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const user = await User.findById(decoded.id).select("-password");
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
+    const user = await User.findById(req.user.id).select("-password");
     res.json(user.getPublicProfile());
   } catch (error) {
-    res.status(401).json({ message: "Invalid token" });
+    res.status(500).json({ message: "Server error while loading user" });
   }
 });
 

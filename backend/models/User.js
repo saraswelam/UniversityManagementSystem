@@ -65,10 +65,37 @@ const userSchema = new mongoose.Schema({
     enum: ["active", "inactive", "graduated", "withdrawn"],
     default: "active",
   },
+  studentsStatus: {
+    type: String,
+    enum: ["active", "inactive", "graduated", "withdrawn"],
+    default: undefined,
+  },
   lastLogin: Date,
 }, {
   timestamps: true,
 });
+
+function syncStudentStatus(user) {
+  if (user.role !== "student") return;
+
+  const status = user.studentStatus || user.studentsStatus || "active";
+  user.studentStatus = status;
+  user.studentsStatus = status;
+}
+
+userSchema.pre("validate", function (next) {
+  syncStudentStatus(this);
+  next();
+});
+
+userSchema.index(
+  { role: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { role: "admin" },
+    name: "one_admin_only",
+  }
+);
 
 // Hash password before saving
 userSchema.pre("save", async function (next) {
@@ -97,6 +124,9 @@ userSchema.methods.getPublicProfile = function () {
     lastName: this.lastName,
     role: this.role,
     department: this.department,
+    studentId: this.studentId,
+    employeeId: this.employeeId,
+    studentStatus: this.studentStatus || this.studentsStatus,
     profileImage: this.profileImage,
     phone: this.phone,
     officeHours: this.officeHours,

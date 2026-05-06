@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { roomBookingsApi, roomsApi } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
+import { useAuth } from '../../auth/AuthContext';
 import Modal from '../../components/Modal';
 import './RoomBookingsPage.css';
 
@@ -27,7 +28,7 @@ function RoomBookingsPage() {
   const [equipmentInput, setEquipmentInput] = useState('');
   const [checkingAvailability, setCheckingAvailability] = useState(false);
   const toast = useToast();
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const { user = {} } = useAuth();
   const isAdmin = user.role === 'admin';
 
   useEffect(() => {

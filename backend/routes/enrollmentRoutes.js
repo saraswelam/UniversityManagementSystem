@@ -30,6 +30,23 @@ function isRegistrationOpen(course, now) {
   return true;
 }
 
+function normalizeStudent(student) {
+  if (!student) return student;
+  const object = student.toObject ? student.toObject() : student;
+  return {
+    ...object,
+    studentStatus: object.studentStatus || object.studentsStatus || "active",
+  };
+}
+
+function normalizeEnrollment(enrollment) {
+  const object = enrollment.toObject ? enrollment.toObject() : enrollment;
+  return {
+    ...object,
+    student: normalizeStudent(object.student),
+  };
+}
+
 router.get("/", async (req, res) => {
   try {
     if (!requireAdmin(req, res)) return;
@@ -50,11 +67,11 @@ router.get("/", async (req, res) => {
     }
 
     const enrollments = await Enrollment.find(filter)
-      .populate("student", "firstName lastName email studentId department studentStatus")
+      .populate("student", "firstName lastName email studentId department studentStatus studentsStatus")
       .populate("course", "name code department type enrollmentCap enrolledCount registrationStart registrationEnd")
       .sort({ createdAt: -1 });
 
-    res.json(enrollments);
+    res.json(enrollments.map(normalizeEnrollment));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -79,7 +96,7 @@ router.get("/student/:id", async (req, res) => {
     if (!requireAdmin(req, res)) return;
 
     const student = await User.findOne({ _id: req.params.id, role: "student" })
-      .select("firstName lastName email studentId department studentStatus");
+      .select("firstName lastName email studentId department studentStatus studentsStatus");
 
     if (!student) return res.status(404).json({ error: "Student not found" });
 
@@ -88,7 +105,7 @@ router.get("/student/:id", async (req, res) => {
       .sort({ createdAt: -1 });
 
     res.json({
-      student,
+      student: normalizeStudent(student),
       courses: enrollments.map((enrollment) => enrollment.course),
     });
   } catch (err) {

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { coursesApi, staffApi, enrollmentsApi } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
+import { useAuth } from '../../auth/AuthContext';
 import Modal from '../../components/Modal';
 import { departments } from '../../data/departments';
 import './CoursesPage.css';
@@ -34,7 +35,7 @@ function CoursesPage() {
   const toast = useToast();
   const location = useLocation();
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const { user = {} } = useAuth();
   const isAdmin = user.role === 'admin';
   const isStudent = user.role === 'student';
   const mandatoryCourses = isStudent && user.department

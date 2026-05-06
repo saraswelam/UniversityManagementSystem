@@ -18,36 +18,29 @@ import StudentsPage from "./pages/StudentsPage/StudentsPage";
 import StaffAvailabilityPage from "./pages/StaffAvailabilityPage/StaffAvailabilityPage";
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
+import { useAuth } from "./auth/AuthContext";
 import { routeAccess, getDefaultRouteForRole } from "./data/routeAccess";
 
-function isLoggedIn() {
-  return Boolean(localStorage.getItem("token"));
-}
-
-function getStoredUser() {
-  try {
-    return JSON.parse(localStorage.getItem("user") || "{}");
-  } catch {
-    return {};
-  }
-}
-
-function getStoredUserRole() {
-  return getStoredUser().role;
-}
-
 function ProtectedRoute() {
-  return isLoggedIn() ? <Outlet /> : <Navigate to="/login" replace />;
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) return null;
+
+  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 }
 
 function PublicRoute() {
-  if (!isLoggedIn()) return <Outlet />;
-  const role = getStoredUserRole();
-  return <Navigate to={getDefaultRouteForRole(role)} replace />;
+  const { isAuthenticated, loading, user } = useAuth();
+
+  if (loading) return null;
+  if (!isAuthenticated) return <Outlet />;
+
+  return <Navigate to={getDefaultRouteForRole(user?.role)} replace />;
 }
 
 function RoleRoute({ allowedRoles, children }) {
-  const role = getStoredUserRole();
+  const { user } = useAuth();
+  const role = user?.role;
 
   if (!role) {
     return <Navigate to="/login" replace />;

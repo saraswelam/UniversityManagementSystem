@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { messagesApi, parentApi } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
+import { useAuth } from '../../auth/AuthContext';
 import Modal from '../../components/Modal';
 import './MessagesPage.css';
 
@@ -20,7 +21,7 @@ function MessagesPage() {
     { label: 'Thank You', text: 'Thank you for your dedication and support in helping my child succeed.' },
   ]);
   const toast = useToast();
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const { user = {} } = useAuth();
   const isParent = user.role === 'parent';
 
   useEffect(() => {
@@ -28,7 +29,7 @@ function MessagesPage() {
     if (isParent) {
       fetchChildCoursesAndInstructors();
     }
-  }, []);
+  }, [isParent]);
 
   const fetchChildCoursesAndInstructors = async () => {
     try {

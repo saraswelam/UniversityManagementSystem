@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { roles } from "../data/roles.js";
+import { useAuth } from "../auth/AuthContext.jsx";
 import { authApi } from "../services/api.js";
 
 const roleFields = {
@@ -14,7 +15,6 @@ const roleFields = {
     { name: "department", label: "Department", placeholder: "Computer Science", required: true },
     { name: "phone", label: "Phone", placeholder: "+20 100 000 0000", type: "tel" },
   ],
-  admin: [],
   staff: [
     { name: "employeeId", label: "Employee ID", placeholder: "EMP003", required: true },
     { name: "department", label: "Department", placeholder: "Registrar", required: true },
@@ -28,6 +28,7 @@ const roleFields = {
 };
 
 const roleFieldNames = [...new Set(Object.values(roleFields).flat().map((field) => field.name))];
+const signUpRoles = roles.filter((role) => role.id !== "admin");
 
 function SignUpPage() {
   const [formData, setFormData] = useState({
@@ -48,8 +49,9 @@ function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const activeRole = roles.find((role) => role.id === formData.role) || roles[0];
+  const activeRole = signUpRoles.find((role) => role.id === formData.role) || signUpRoles[0];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -114,9 +116,7 @@ function SignUpPage() {
     try {
       const response = await authApi.register(buildRegistrationPayload());
 
-      // Store token and user data
-      localStorage.setItem("token", response.token);
-      localStorage.setItem("user", JSON.stringify(response.user));
+      login(response);
 
       // Redirect to dashboard
       navigate("/dashboard");
@@ -142,7 +142,7 @@ function SignUpPage() {
           <div className="form-group">
             <label>I am a...</label>
             <div className="role-grid">
-              {roles.map((role) => (
+              {signUpRoles.map((role) => (
                 <button
                   key={role.id}
                   type="button"

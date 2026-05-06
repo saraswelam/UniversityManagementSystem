@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { leaveRequestsApi } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
+import { useAuth } from '../../auth/AuthContext';
 import Modal from '../../components/Modal';
 import './LeaveRequestsPage.css';
 
@@ -16,7 +17,7 @@ function LeaveRequestsPage() {
     reason: '',
   });
   const toast = useToast();
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const { user = {} } = useAuth();
   const isAdmin = user.role === 'admin';
 
   useEffect(() => {
