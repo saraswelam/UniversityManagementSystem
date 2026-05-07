@@ -37,7 +37,7 @@ function readFileAsDataUrl(file) {
 function AssignmentsPage() {
   const { user } = useAuth();
   const role = user?.role || 'student';
-  const canManageAssignments = role === 'admin' || role === 'professor';
+  const canManageAssignments = role === 'professor';
   const isStudent = role === 'student';
 
   const [assignments, setAssignments] = useState([]);

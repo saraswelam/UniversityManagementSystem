@@ -40,7 +40,7 @@ function Dashboard() {
       try {
         const [courses, assignments, announcements, meetings] = await Promise.all([
           coursesApi.getAll(),
-          assignmentsApi.getAll(),
+          role === 'professor' ? assignmentsApi.getAll() : Promise.resolve([]),
           announcementsApi.getAll(),
           meetingsApi.getAll(),
         ]);
@@ -64,10 +64,10 @@ function Dashboard() {
     };
 
     fetchData();
-  }, []);
+  }, [role]);
 
   const quickActions = [
-    (role === 'admin' || role === 'professor') && {
+    role === 'professor' && {
       label: 'Create Assignment',
       path: '/assignments?new=1',
     },
@@ -95,13 +95,15 @@ function Dashboard() {
             <span className="stat-label">Courses</span>
           </div>
         </button>
-        <button type="button" className="stat-card" onClick={() => navigate('/assignments')}>
-          <div className="stat-icon">A</div>
-          <div className="stat-info">
-            <span className="stat-value">{stats.assignments}</span>
-            <span className="stat-label">Assignments</span>
-          </div>
-        </button>
+        {role === 'professor' && (
+          <button type="button" className="stat-card" onClick={() => navigate('/assignments')}>
+            <div className="stat-icon">A</div>
+            <div className="stat-info">
+              <span className="stat-value">{stats.assignments}</span>
+              <span className="stat-label">Assignments</span>
+            </div>
+          </button>
+        )}
         <button type="button" className="stat-card" onClick={() => navigate('/announcements')}>
           <div className="stat-icon">N</div>
           <div className="stat-info">

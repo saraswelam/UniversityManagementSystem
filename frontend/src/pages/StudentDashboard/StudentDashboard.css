@@ -183,9 +183,66 @@
   gap: 12px;
 }
 
+.student-assignment-row-expanded {
+  align-items: flex-start;
+}
+
 .student-assignment-row h4 {
   margin: 5px 0 0;
   font-size: 15px;
+}
+
+.student-assignment-actions {
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.student-submission-status {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 10px;
+  color: #2c3e50;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+}
+
+.student-submission-status span {
+  color: #6c757d;
+}
+
+.student-submission-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.student-submission-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: #2c3e50;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.student-submission-form textarea,
+.student-submission-form input {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+}
+
+.student-submission-form textarea:focus,
+.student-submission-form input:focus {
+  border-color: #e6b800;
+  outline: none;
 }
 
 .student-empty {
@@ -236,6 +293,12 @@
 
   .student-hero {
     align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .student-assignment-row-expanded,
+  .student-assignment-actions {
+    align-items: stretch;
     flex-direction: column;
   }
 }

@@ -7,12 +7,24 @@ const router = express.Router();
 
 async function validateCourse(req, courseId) {
   if (!courseId) return true;
+  if (req.user?.role === "professor") {
+    return Boolean(await Course.findOne({ _id: courseId, professor: req.user.email }));
+  }
+
   return Boolean(await Course.findOne(ownerFilter(req, { _id: courseId })));
 }
 
 function officeHourReadFilter(req, extra = {}) {
   if (req.user?.role === "student") return extra;
   return ownerFilter(req, extra);
+}
+
+function requireProfessor(req, res, next) {
+  if (req.user?.role !== "professor") {
+    return res.status(403).json({ error: "Only professors can manage office hours" });
+  }
+
+  next();
 }
 
 router.get("/", async (req, res) => {
@@ -28,7 +40,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", requireProfessor, async (req, res) => {
   try {
     const { professor, day, startTime, endTime, time, location, courseId, mode } = req.body;
     const resolvedStartTime = startTime || time;
@@ -59,7 +71,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", requireProfessor, async (req, res) => {
   try {
     const { professor, day, startTime, endTime, time, location, courseId, mode } = req.body;
 
@@ -91,7 +103,7 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireProfessor, async (req, res) => {
   try {
     const entry = await OfficeHour.findOneAndDelete(ownerFilter(req, { _id: req.params.id }));
     if (!entry) return res.status(404).json({ error: "Office hours not found" });

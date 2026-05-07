@@ -87,7 +87,7 @@ function OfficeHoursPage() {
       <div className="page-header">
         <h2>Office Hours</h2>
         <button className="add-btn" onClick={() => { setEditingItem(null); setFormData({ day: '', startTime: '', endTime: '', location: '', courseId: '' }); setShowModal(true); }}>
-          ➕ Add Office Hours
+          Add Office Hours
         </button>
       </div>
 
@@ -98,14 +98,14 @@ function OfficeHoursPage() {
               <div className="office-hours-header">
                 <span className="office-hours-day">{item.day}</span>
                 <div className="office-hours-actions">
-                  <button onClick={() => handleEdit(item)}>✏️</button>
-                  <button onClick={() => handleDelete(item._id)}>🗑️</button>
+                  <button onClick={() => handleEdit(item)}>Edit</button>
+                  <button onClick={() => handleDelete(item._id)}>Delete</button>
                 </div>
               </div>
               <div className="office-hours-details">
-                <p>🕐 {item.startTime} - {item.endTime}</p>
-                <p>📍 {item.location || 'TBD'}</p>
-                <p>📚 {getCourseName(item.courseId)}</p>
+                <p>Time: {item.startTime} - {item.endTime}</p>
+                <p>Location: {item.location || 'TBD'}</p>
+                <p>Course: {getCourseName(item.courseId)}</p>
               </div>
             </div>
           ))

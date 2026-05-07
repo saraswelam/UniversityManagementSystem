@@ -15,18 +15,6 @@ const SYSTEM_ADMIN = {
 };
 
 async function ensureSystemAdmin() {
-  const uri = process.env.MONGODB_URI;
-  const dbName = process.env.MONGODB_DB_NAME;
-
-  if (!uri) {
-    throw new Error("MONGODB_URI is not defined in backend/.env");
-  }
-
-  await mongoose.connect(uri, {
-    dbName,
-    authSource: process.env.MONGODB_AUTH_SOURCE || "admin",
-  });
-
   await User.deleteMany({ role: "admin", email: { $ne: SYSTEM_ADMIN.email } });
 
   const admin = await User.findOne({ email: SYSTEM_ADMIN.email });
@@ -41,16 +29,44 @@ async function ensureSystemAdmin() {
     await new User(SYSTEM_ADMIN).save();
   }
 
-  await User.syncIndexes();
+  try {
+    await User.syncIndexes();
+  } catch (error) {
+    console.warn(`System admin ready, but user indexes could not be synced: ${error.message}`);
+  }
+
   const adminCount = await User.countDocuments({ role: "admin" });
   console.log(`System admin ready. Admin accounts in database: ${adminCount}`);
 }
 
-ensureSystemAdmin()
-  .catch((error) => {
-    console.error(error.message);
-    process.exitCode = 1;
-  })
-  .finally(async () => {
-    await mongoose.disconnect();
+async function runStandalone() {
+  const uri = process.env.MONGODB_URI;
+  const dbName = process.env.MONGODB_DB_NAME;
+
+  if (!uri) {
+    throw new Error("MONGODB_URI is not defined in backend/.env");
+  }
+
+  await mongoose.connect(uri, {
+    dbName,
+    authSource: process.env.MONGODB_AUTH_SOURCE || "admin",
   });
+
+  await ensureSystemAdmin();
+}
+
+if (require.main === module) {
+  runStandalone()
+    .catch((error) => {
+      console.error(error.message);
+      process.exitCode = 1;
+    })
+    .finally(async () => {
+      await mongoose.disconnect();
+    });
+}
+
+module.exports = {
+  SYSTEM_ADMIN,
+  ensureSystemAdmin,
+};

@@ -22,6 +22,7 @@ const applicationRoutes = require("./routes/applicationRoutes");
 const enrollmentRoutes  = require("./routes/enrollmentRoutes");
 const studentRoutes     = require("./routes/studentRoutes");
 const { requireAuth }    = require("./middleware/auth");
+const { ensureSystemAdmin } = require("./ensureSystemAdmin");
 
 const app  = express();
 const PORT = process.env.PORT || 5000;
@@ -80,6 +81,7 @@ app.use("/api/students",      requireAuth, studentRoutes);
 async function startServer() {
   try {
     await connectDB();
+    await ensureSystemAdmin();
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });

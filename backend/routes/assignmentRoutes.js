@@ -22,8 +22,7 @@ function assignmentFilter(req, extra = {}) {
 
 async function getReviewableAssignment(req, assignmentId) {
   if (!assignmentId) return null;
-  const filter = isAdmin(req) ? { _id: assignmentId } : { _id: assignmentId, createdBy: req.user.id };
-  return Assignment.findOne(filter);
+  return Assignment.findOne({ _id: assignmentId, createdBy: req.user.id });
 }
 
 function dataUrlToBuffer(dataUrl) {
@@ -33,15 +32,34 @@ function dataUrlToBuffer(dataUrl) {
 }
 
 async function resolveCourse(req, courseId, courseCode) {
-  if (!courseId) return { courseId: null, courseCode };
+  if (!courseId) {
+    const normalizedCode = courseCode?.trim().toUpperCase();
+    if (!normalizedCode) return { courseId: null, courseCode };
+
+    const course = await Course.findOne({ code: normalizedCode });
+    if (!course) return null;
+    if (isProfessor(req) && course.professor !== req.user.email) return null;
+
+    return { courseId: course._id, courseCode: course.code };
+  }
 
   const course = await Course.findById(courseId);
   if (!course) return null;
+  if (isProfessor(req) && course.professor !== req.user.email) return null;
 
   return {
     courseId,
     courseCode: course.code,
   };
+}
+
+async function studentCanAccessAssignment(req, assignment) {
+  if (!assignment?.courseCode) return false;
+
+  const enrollments = await Enrollment.find({ student: req.user.id })
+    .populate("course", "code");
+
+  return enrollments.some((item) => item.course?.code === assignment.courseCode.toUpperCase());
 }
 
 router.get("/", async (req, res) => {
@@ -140,7 +158,7 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    if (!isAdmin(req) && !isProfessor(req)) {
+    if (!isProfessor(req)) {
       return res.status(403).json({ error: "Only professors can create assignments" });
     }
 
@@ -209,12 +227,19 @@ router.get("/submissions", async (req, res) => {
 router.post("/submissions", async (req, res) => {
   try {
     const { assignmentId, studentName, content, fileName, fileType, fileData } = req.body;
+    if (!isStudent(req)) {
+      return res.status(403).json({ error: "Only students can submit assignments" });
+    }
+
     if (!assignmentId || (!content && !fileData)) {
       return res.status(400).json({ error: "assignmentId and submission content or file required" });
     }
 
     const assignment = await Assignment.findOne(assignmentFilter(req, { _id: assignmentId }));
     if (!assignment) return res.status(404).json({ error: "Assignment not found" });
+    if (!(await studentCanAccessAssignment(req, assignment))) {
+      return res.status(403).json({ error: "You can only submit assignments for enrolled courses" });
+    }
 
     const resolvedStudentName = studentName
       || `${req.user.firstName || ""} ${req.user.lastName || ""}`.trim()
@@ -253,8 +278,8 @@ router.get("/submissions/:id/download", async (req, res) => {
 
     const ownsSubmission = String(submission.createdBy || "") === req.user.id
       || String(submission.studentUserId || "") === req.user.id;
-    const canReview = isAdmin(req)
-      || String(submission.assignmentId?.createdBy || "") === req.user.id;
+    const canReview = isProfessor(req)
+      && String(submission.assignmentId?.createdBy || "") === req.user.id;
 
     if (!ownsSubmission && !canReview) {
       return res.status(403).json({ error: "You cannot download this submission" });
@@ -309,7 +334,7 @@ router.patch("/submissions/:id/grade", async (req, res) => {
   try {
     const { grade, feedback } = req.body;
 
-    if (!isAdmin(req) && !isProfessor(req)) {
+    if (!isProfessor(req)) {
       return res.status(403).json({ error: "Only professors can grade submissions" });
     }
 
@@ -322,7 +347,7 @@ router.patch("/submissions/:id/grade", async (req, res) => {
     if (!existingSubmission) return res.status(404).json({ error: "Submission not found" });
 
     const assignment = existingSubmission.assignmentId;
-    if (!assignment || (!isAdmin(req) && String(assignment.createdBy || "") !== req.user.id)) {
+    if (!assignment || String(assignment.createdBy || "") !== req.user.id) {
       return res.status(403).json({ error: "You can only grade submissions for your assignments" });
     }
 
@@ -371,8 +396,10 @@ router.get("/gradebook", async (req, res) => {
         { studentUserId: req.user.id },
         { studentName: `${req.user.firstName || ""} ${req.user.lastName || ""}`.trim() },
       ];
-    } else if (!isAdmin(req)) {
+    } else if (isProfessor(req)) {
       filter.gradedBy = req.user.id;
+    } else {
+      return res.status(403).json({ error: "Only students and professors can view the gradebook" });
     }
 
     const entries = await GradebookEntry.find(filter)
@@ -388,7 +415,7 @@ router.get("/gradebook", async (req, res) => {
 
 router.patch("/:id", async (req, res) => {
   try {
-    if (!isAdmin(req) && !isProfessor(req)) {
+    if (!isProfessor(req)) {
       return res.status(403).json({ error: "Only professors can update assignments" });
     }
 
@@ -402,7 +429,7 @@ router.patch("/:id", async (req, res) => {
     }
 
     const assignment = await Assignment.findOneAndUpdate(
-      isAdmin(req) ? { _id: req.params.id } : ownerFilter(req, { _id: req.params.id }),
+      ownerFilter(req, { _id: req.params.id }),
       updates,
       { new: true, runValidators: true }
     ).populate("courseId", "name code");
@@ -416,12 +443,12 @@ router.patch("/:id", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
-    if (!isAdmin(req) && !isProfessor(req)) {
+    if (!isProfessor(req)) {
       return res.status(403).json({ error: "Only professors can delete assignments" });
     }
 
     const assignment = await Assignment.findOneAndDelete(
-      isAdmin(req) ? { _id: req.params.id } : ownerFilter(req, { _id: req.params.id })
+      ownerFilter(req, { _id: req.params.id })
     );
     if (!assignment) return res.status(404).json({ error: "Assignment not found" });
 
