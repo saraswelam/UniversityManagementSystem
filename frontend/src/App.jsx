@@ -1,8 +1,14 @@
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import AppLayout from "./layouts/AppLayout";
 import Dashboard from "./pages/Dashboard/Dashboard";
+import StudentDashboard from "./pages/StudentDashboard/StudentDashboard";
 import CoursesPage from "./pages/CoursesPage/CoursesPage";
+import StudentCoursesPage from "./pages/StudentCourses/StudentCoursesPage";
+import StudentCourseDetailPage from "./pages/StudentCourses/StudentCourseDetailPage";
 import AssignmentsPage from "./pages/AssignmentsPage/AssignmentsPage";
+import StudentAssignmentsPage from "./pages/StudentAssignments/StudentAssignmentsPage";
+import StudentSchedulePage from "./pages/StudentSchedule/StudentSchedulePage";
+import StudentPlaceholderPage from "./pages/StudentPlaceholder/StudentPlaceholderPage";
 import DiscussionsPage from "./pages/DiscussionsPage/DiscussionsPage";
 import OfficeHoursPage from "./pages/OfficeHoursPage/OfficeHoursPage";
 import MeetingsPage from "./pages/MeetingsPage/MeetingsPage";
@@ -53,6 +59,11 @@ function RoleRoute({ allowedRoles, children }) {
   return children;
 }
 
+function StudentAwarePage({ studentPage, defaultPage }) {
+  const { user } = useAuth();
+  return user?.role === "student" ? studentPage : defaultPage;
+}
+
 function App() {
   return (
     <Routes>
@@ -68,7 +79,15 @@ function App() {
             path="/dashboard"
             element={(
               <RoleRoute allowedRoles={routeAccess["/dashboard"]}>
-                <Dashboard />
+                <StudentAwarePage studentPage={<StudentDashboard />} defaultPage={<Dashboard />} />
+              </RoleRoute>
+            )}
+          />
+          <Route
+            path="/schedule"
+            element={(
+              <RoleRoute allowedRoles={routeAccess["/schedule"]}>
+                <StudentSchedulePage />
               </RoleRoute>
             )}
           />
@@ -76,7 +95,15 @@ function App() {
             path="/courses"
             element={(
               <RoleRoute allowedRoles={routeAccess["/courses"]}>
-                <CoursesPage />
+                <StudentAwarePage studentPage={<StudentCoursesPage />} defaultPage={<CoursesPage />} />
+              </RoleRoute>
+            )}
+          />
+          <Route
+            path="/courses/:id"
+            element={(
+              <RoleRoute allowedRoles={routeAccess["/courses/:id"]}>
+                <StudentCourseDetailPage />
               </RoleRoute>
             )}
           />
@@ -84,7 +111,15 @@ function App() {
             path="/assignments"
             element={(
               <RoleRoute allowedRoles={routeAccess["/assignments"]}>
-                <AssignmentsPage />
+                <StudentAwarePage studentPage={<StudentAssignmentsPage />} defaultPage={<AssignmentsPage />} />
+              </RoleRoute>
+            )}
+          />
+          <Route
+            path="/grades"
+            element={(
+              <RoleRoute allowedRoles={routeAccess["/grades"]}>
+                <StudentPlaceholderPage title="Grades" />
               </RoleRoute>
             )}
           />
@@ -92,7 +127,7 @@ function App() {
             path="/discussions"
             element={(
               <RoleRoute allowedRoles={routeAccess["/discussions"]}>
-                <DiscussionsPage />
+                <StudentAwarePage studentPage={<StudentPlaceholderPage title="Discussions" />} defaultPage={<DiscussionsPage />} />
               </RoleRoute>
             )}
           />

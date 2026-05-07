@@ -5,8 +5,10 @@ import './Topbar.css';
 
 const pageTitles = {
   '/dashboard': 'Dashboard',
+  '/schedule': 'Schedule',
   '/courses': 'Courses',
   '/assignments': 'Assignments',
+  '/grades': 'Grades',
   '/discussions': 'Discussions',
   '/office-hours': 'Office Hours',
   '/meetings': 'Meetings',
@@ -25,7 +27,10 @@ function Topbar() {
   const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ');
   const displayName = fullName || user.email || 'User';
 
-  const getPageTitle = () => pageTitles[location.pathname] || 'Dashboard';
+  const getPageTitle = () => {
+    if (location.pathname.startsWith('/courses/')) return 'Course Details';
+    return pageTitles[location.pathname] || 'Dashboard';
+  };
 
   const handleLogout = () => {
     logout();

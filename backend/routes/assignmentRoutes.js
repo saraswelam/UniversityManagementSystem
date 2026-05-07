@@ -1,6 +1,8 @@
 const express = require("express");
 const { Assignment, Submission, GradebookEntry } = require("../models/Assignment");
 const Course = require("../models/Course");
+//const Enrollment = require("../models/Enrollment");
+const Enrollment = require("../models/Enrollment");
 const { isAdmin, ownerFilter, removeUndefined, withOwner } = require("../utils/ownership");
 
 const router = express.Router();
@@ -44,6 +46,84 @@ async function resolveCourse(req, courseId, courseCode) {
 
 router.get("/", async (req, res) => {
   try {
+    if (req.user.role === "student") {
+      const enrollments = await Enrollment.find({ student: req.user.id })
+        .populate("course", "code");
+      const courseCodes = enrollments
+        .map((enrollment) => enrollment.course?.code)
+        .filter(Boolean);
+
+      if (courseCodes.length === 0) return res.json([]);
+
+      const filter = {
+        courseCode: req.query.courseCode
+          ? req.query.courseCode.toUpperCase()
+          : { $in: courseCodes },
+      };
+
+      if (req.query.courseCode && !courseCodes.includes(filter.courseCode)) {
+        return res.json([]);
+      }
+
+      const assignments = await Assignment.find(filter)
+        .populate("courseId", "name code")
+        .sort({ dueDate: 1, createdAt: -1 });
+
+      return res.json(assignments);
+    }
+
+    if (req.user.role === "student") {
+      const enrollments = await Enrollment.find({ student: req.user.id })
+        .populate("course", "code");
+      const courseCodes = enrollments
+        .map((enrollment) => enrollment.course?.code)
+        .filter(Boolean);
+
+      if (courseCodes.length === 0) return res.json([]);
+
+      const filter = {
+        courseCode: req.query.courseCode
+          ? req.query.courseCode.toUpperCase()
+          : { $in: courseCodes },
+      };
+
+      if (req.query.courseCode && !courseCodes.includes(filter.courseCode)) {
+        return res.json([]);
+      }
+
+      const assignments = await Assignment.find(filter)
+        .populate("courseId", "name code")
+        .sort({ dueDate: 1, createdAt: -1 });
+
+      return res.json(assignments);
+    }
+
+    if (req.user.role === "student") {
+      const enrollments = await Enrollment.find({ student: req.user.id })
+        .populate("course", "code");
+      const courseCodes = enrollments
+        .map((enrollment) => enrollment.course?.code)
+        .filter(Boolean);
+
+      if (courseCodes.length === 0) return res.json([]);
+
+      const filter = {
+        courseCode: req.query.courseCode
+          ? req.query.courseCode.toUpperCase()
+          : { $in: courseCodes },
+      };
+
+      if (req.query.courseCode && !courseCodes.includes(filter.courseCode)) {
+        return res.json([]);
+      }
+
+      const assignments = await Assignment.find(filter)
+        .populate("courseId", "name code")
+        .sort({ dueDate: 1, createdAt: -1 });
+
+      return res.json(assignments);
+    }
+
     const filter = assignmentFilter(
       req,
       req.query.courseCode ? { courseCode: req.query.courseCode.toUpperCase() } : {}

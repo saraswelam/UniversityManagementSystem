@@ -1,0 +1,241 @@
+.student-page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.student-hero,
+.student-panel,
+.student-summary-card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.student-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px;
+}
+
+.student-kicker {
+  margin: 0 0 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #7b6a2c;
+  text-transform: uppercase;
+}
+
+.student-hero h2,
+.student-panel h3 {
+  margin: 0;
+  color: #2c3e50;
+  font-family: 'DM Serif Display', serif;
+}
+
+.student-hero h2 {
+  font-size: 28px;
+}
+
+.student-primary-btn,
+.student-secondary-btn {
+  border: none;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.student-primary-btn {
+  padding: 12px 18px;
+  background: #e6b800;
+  color: #1a1a2e;
+}
+
+.student-secondary-btn {
+  padding: 10px 14px;
+  background: #1a1a2e;
+  color: #fff;
+}
+
+.student-primary-btn:disabled,
+.student-secondary-btn:disabled {
+  background: #d8d8d8;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.student-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 16px;
+}
+
+.student-summary-card {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.student-summary-value {
+  font-family: 'DM Serif Display', serif;
+  font-size: 30px;
+  color: #1a1a2e;
+}
+
+.student-summary-label,
+.student-course-meta,
+.student-due-date,
+.student-empty,
+.student-label {
+  font-family: 'DM Sans', sans-serif;
+}
+
+.student-summary-label,
+.student-course-meta,
+.student-due-date {
+  color: #6c757d;
+  font-size: 13px;
+}
+
+.student-dashboard-grid,
+.support-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px;
+}
+
+.student-panel {
+  padding: 22px;
+}
+
+.student-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.student-panel-header a {
+  color: #7b6a2c;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.student-course-list,
+.student-assignment-list,
+.office-hour-list,
+.booking-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.student-course-row,
+.student-assignment-row,
+.office-hour-row {
+  width: 100%;
+  border: 1px solid #ececec;
+  border-radius: 8px;
+  background: #fbfbfb;
+  padding: 14px;
+  text-align: left;
+}
+
+.student-course-row,
+.office-hour-row {
+  cursor: pointer;
+}
+
+.student-course-row {
+  display: grid;
+  grid-template-columns: 90px 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.student-course-code {
+  color: #7b6a2c;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.student-course-name,
+.student-assignment-row h4 {
+  color: #2c3e50;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+}
+
+.student-assignment-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.student-assignment-row h4 {
+  margin: 5px 0 0;
+  font-size: 15px;
+}
+
+.student-empty {
+  color: #888;
+  margin: 0;
+  padding: 12px 0;
+}
+
+.student-label {
+  display: block;
+  margin-bottom: 6px;
+  color: #2c3e50;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.student-input {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  background: #fff;
+}
+
+.student-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.office-hour-row {
+  display: grid;
+  grid-template-columns: 100px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  font-family: 'DM Sans', sans-serif;
+  color: #2c3e50;
+}
+
+@media (max-width: 900px) {
+  .student-hero,
+  .student-dashboard-grid,
+  .support-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .student-hero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

@@ -22,10 +22,21 @@ const menuItems = [
   { path: '/payroll', label: 'Payroll', icon: '$', roles: ['admin', 'staff'] },
 ];
 
+const studentMenuItems = [
+  { path: '/dashboard', label: 'Dashboard', icon: 'D' },
+  { path: '/schedule', label: 'Schedule', icon: 'S' },
+  { path: '/assignments', label: 'Assignments', icon: 'A' },
+  { path: '/grades', label: 'Grades', icon: 'G' },
+  { path: '/courses', label: 'Courses', icon: 'C' },
+  { path: '/discussions', label: 'Discussions', icon: 'F' },
+];
+
 function Sidebar() {
   const { user = {}, logout } = useAuth();
   const role = user.role || 'student';
-  const visibleItems = menuItems.filter((item) => item.roles.includes(role));
+  const visibleItems = role === 'student'
+    ? studentMenuItems
+    : menuItems.filter((item) => item.roles.includes(role));
 
   const handleLogout = () => {
     logout();

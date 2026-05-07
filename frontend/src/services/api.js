@@ -149,7 +149,7 @@ export const staffApi = {
 };
 
 export const assignmentsApi = {
-  getAll: () => request("/assignments"),
+  getAll: (courseCode) => request(`/assignments${courseCode ? `?courseCode=${encodeURIComponent(courseCode)}` : ""}`),
   create: (data) => request("/assignments", {
     method: "POST",
     body: JSON.stringify({
@@ -195,7 +195,10 @@ export const discussionsApi = {
   }),
 };
 
-export const officeHoursApi = crudApi("/office-hours");
+export const officeHoursApi = {
+  ...crudApi("/office-hours"),
+  getAll: (professor) => request(`/office-hours${professor ? `?professor=${encodeURIComponent(professor)}` : ""}`),
+};
 
 export const meetingsApi = {
   ...crudApi("/meetings"),

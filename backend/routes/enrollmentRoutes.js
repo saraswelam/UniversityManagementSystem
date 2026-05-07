@@ -68,7 +68,7 @@ router.get("/", async (req, res) => {
 
     const enrollments = await Enrollment.find(filter)
       .populate("student", "firstName lastName email studentId department studentStatus studentsStatus")
-      .populate("course", "name code department type enrollmentCap enrolledCount registrationStart registrationEnd")
+      .populate("course", "name code department type professor enrollmentCap enrolledCount registrationStart registrationEnd")
       .sort({ createdAt: -1 });
 
     res.json(enrollments.map(normalizeEnrollment));
@@ -82,7 +82,7 @@ router.get("/mine", async (req, res) => {
     if (!requireStudent(req, res)) return;
 
     const enrollments = await Enrollment.find({ student: req.user.id })
-      .populate("course", "name code department type enrollmentCap enrolledCount registrationStart registrationEnd")
+      .populate("course", "name code department type professor enrollmentCap enrolledCount registrationStart registrationEnd")
       .sort({ createdAt: -1 });
 
     res.json(enrollments);
@@ -101,7 +101,7 @@ router.get("/student/:id", async (req, res) => {
     if (!student) return res.status(404).json({ error: "Student not found" });
 
     const enrollments = await Enrollment.find({ student: student._id })
-      .populate("course", "name code department type")
+      .populate("course", "name code department type professor")
       .sort({ createdAt: -1 });
 
     res.json({
@@ -124,10 +124,6 @@ router.post("/", async (req, res) => {
 
     const course = await Course.findById(courseId);
     if (!course) return res.status(404).json({ error: "Course not found" });
-
-    if (course.type !== "elective") {
-      return res.status(400).json({ error: "Only elective courses are open for enrollment" });
-    }
 
     const now = new Date();
     if (!isRegistrationOpen(course, now)) {
