@@ -30,6 +30,7 @@ router.post("/", async (req, res) => {
       professor,
       date,
       time,
+      durationMinutes: 15,
       mode,
     }));
 
@@ -42,7 +43,7 @@ router.post("/", async (req, res) => {
 router.patch("/:id", async (req, res) => {
   try {
     const { title, description, link, studentName, professor, date, time, mode } = req.body;
-    const updates = removeUndefined({ title, description, link, studentName, professor, date, time, mode });
+    const updates = removeUndefined({ title, description, link, studentName, professor, date, time, mode, durationMinutes: 15 });
 
     const meeting = await Meeting.findOneAndUpdate(
       ownerFilter(req, { _id: req.params.id }),

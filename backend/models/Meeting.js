@@ -9,6 +9,7 @@ const meetingSchema = new mongoose.Schema(
     professor:   { type: String, default: "General", trim: true },
     date:        { type: String, required: true },
     time:        { type: String, default: "" },
+    durationMinutes: { type: Number, default: 15, min: 15, max: 15 },
     mode:        { type: String, default: "In person", trim: true },
     status:      {
       type: String,
