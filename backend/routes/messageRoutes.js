@@ -13,6 +13,8 @@ function messageAccessFilter(req, extra = {}) {
       { createdBy: req.user.id },
       { to: req.user.email },
     ],
+    // Exclude messages deleted by current user
+    deletedBy: { $ne: req.user.email },
   };
 }
 
@@ -78,10 +80,24 @@ router.patch("/:id/read", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
-    const message = await Message.findOneAndDelete(messageAccessFilter(req, { _id: req.params.id }));
-    if (!message) return res.status(404).json({ error: "Message not found" });
+    // Find the message first
+    const message = await Message.findOne(messageAccessFilter(req, { _id: req.params.id }));
 
-    res.json({ message: "Deleted" });
+    if (!message) {
+      return res.status(404).json({ error: "Message not found" });
+    }
+
+    // Check if current user is the sender
+    const isSender = message.from === req.user.email;
+
+    if (!isSender) {
+      // Only sender can delete messages
+      return res.status(403).json({ error: "Only the sender can delete this message" });
+    }
+
+    // SENDER DELETES: Hard delete - remove for both sender and recipient
+    await Message.findByIdAndDelete(message._id);
+    res.json({ message: "Message deleted for everyone" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

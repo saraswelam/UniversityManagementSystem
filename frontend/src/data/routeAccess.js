@@ -8,7 +8,7 @@ export const routeAccess = {
   "/discussions": ["admin", "student", "professor"],
   "/office-hours": ["professor"],
   "/meetings": ["admin", "professor", "parent", "staff"],
-  "/messages": ["admin", "professor", "parent", "staff"],
+  "/messages": ["admin", "student", "professor", "parent", "staff"],
   "/announcements": ["admin", "professor"],
   "/applications": ["admin"],
   "/enrollments": ["admin"],

@@ -29,6 +29,8 @@ const studentMenuItems = [
   { path: '/grades', label: 'Grades', icon: 'G' },
   { path: '/courses', label: 'Courses', icon: 'C' },
   { path: '/discussions', label: 'Discussions', icon: 'F' },
+  { path: '/messages', label: 'Messages', icon: '@' },
+  { path: '/meetings', label: 'Meetings', icon: 'M' },
 ];
 
 function Sidebar() {

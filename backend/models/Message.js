@@ -8,6 +8,7 @@ const messageSchema = new mongoose.Schema(
     content: { type: String, required: true },
     text:    { type: String, default: "" },
     read:    { type: Boolean, default: false },
+    deletedBy: { type: [String], default: [] }, // Array of user emails who deleted this message
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
