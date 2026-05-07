@@ -8,6 +8,12 @@ import './AssignmentsPage.css';
 
 const emptyAssignmentForm = { title: '', description: '', dueDate: '', courseId: '' };
 const emptySubmissionForm = { content: '' };
+const reviewFilters = [
+  { id: 'all', label: 'All' },
+  { id: 'needs-grading', label: 'Needs grading' },
+  { id: 'graded', label: 'Graded' },
+  { id: 'no-submissions', label: 'No submissions' },
+];
 
 function saveBlob({ blob, filename }) {
   const url = URL.createObjectURL(blob);
@@ -52,6 +58,7 @@ function AssignmentsPage() {
   const [submissionForm, setSubmissionForm] = useState(emptySubmissionForm);
   const [selectedFile, setSelectedFile] = useState(null);
   const [gradeDrafts, setGradeDrafts] = useState({});
+  const [reviewFilter, setReviewFilter] = useState('all');
   const toast = useToast();
   const location = useLocation();
   const navigate = useNavigate();
@@ -79,6 +86,43 @@ function AssignmentsPage() {
       };
     }, {});
   }, [submissions]);
+
+  const reviewStats = useMemo(() => {
+    return assignments.reduce((stats, assignment) => {
+      const assignmentSubmissions = submissionsByAssignment[assignment._id] || [];
+      const needsGrading = assignmentSubmissions.filter((submission) => submission.grade === null || submission.grade === undefined);
+      const graded = assignmentSubmissions.filter((submission) => submission.grade !== null && submission.grade !== undefined);
+
+      return {
+        totalAssignments: stats.totalAssignments + 1,
+        totalSubmissions: stats.totalSubmissions + assignmentSubmissions.length,
+        needsGrading: stats.needsGrading + needsGrading.length,
+        graded: stats.graded + graded.length,
+        withoutSubmissions: stats.withoutSubmissions + (assignmentSubmissions.length === 0 ? 1 : 0),
+      };
+    }, {
+      totalAssignments: 0,
+      totalSubmissions: 0,
+      needsGrading: 0,
+      graded: 0,
+      withoutSubmissions: 0,
+    });
+  }, [assignments, submissionsByAssignment]);
+
+  const visibleAssignments = useMemo(() => {
+    if (!canManageAssignments || reviewFilter === 'all') return assignments;
+
+    return assignments.filter((assignment) => {
+      const assignmentSubmissions = submissionsByAssignment[assignment._id] || [];
+      const hasUngradedSubmission = assignmentSubmissions.some((submission) => submission.grade === null || submission.grade === undefined);
+      const hasGradedSubmission = assignmentSubmissions.some((submission) => submission.grade !== null && submission.grade !== undefined);
+
+      if (reviewFilter === 'needs-grading') return hasUngradedSubmission;
+      if (reviewFilter === 'graded') return hasGradedSubmission;
+      if (reviewFilter === 'no-submissions') return assignmentSubmissions.length === 0;
+      return true;
+    });
+  }, [assignments, canManageAssignments, reviewFilter, submissionsByAssignment]);
 
   const fetchData = async () => {
     try {
@@ -261,16 +305,58 @@ function AssignmentsPage() {
         )}
       </div>
 
+      {canManageAssignments && (
+        <section className="review-summary" aria-label="Assignment review summary">
+          <div className="review-summary-card">
+            <span className="review-summary-value">{reviewStats.totalAssignments}</span>
+            <span className="review-summary-label">Assignments</span>
+          </div>
+          <div className="review-summary-card urgent">
+            <span className="review-summary-value">{reviewStats.needsGrading}</span>
+            <span className="review-summary-label">Needs grading</span>
+          </div>
+          <div className="review-summary-card">
+            <span className="review-summary-value">{reviewStats.graded}</span>
+            <span className="review-summary-label">Graded</span>
+          </div>
+          <div className="review-summary-card">
+            <span className="review-summary-value">{reviewStats.totalSubmissions}</span>
+            <span className="review-summary-label">Submissions</span>
+          </div>
+        </section>
+      )}
+
+      {canManageAssignments && (
+        <div className="review-filter-bar" aria-label="Filter assignments by review status">
+          {reviewFilters.map((filter) => (
+            <button
+              key={filter.id}
+              type="button"
+              className={`review-filter ${reviewFilter === filter.id ? 'active' : ''}`}
+              onClick={() => setReviewFilter(filter.id)}
+            >
+              {filter.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="assignments-list">
-        {assignments.length > 0 ? (
-          assignments.map((assignment) => {
+        {visibleAssignments.length > 0 ? (
+          visibleAssignments.map((assignment) => {
             const assignmentSubmissions = submissionsByAssignment[assignment._id] || [];
             const mySubmission = isStudent ? assignmentSubmissions[0] : null;
+            const ungradedCount = assignmentSubmissions.filter((submission) => submission.grade === null || submission.grade === undefined).length;
 
             return (
               <div key={assignment._id} className="assignment-card">
                 <div className="assignment-header">
-                  <span className="assignment-course">{getCourseName(assignment.courseId)}</span>
+                  <div className="assignment-badges">
+                    <span className="assignment-course">{getCourseName(assignment.courseId)}</span>
+                    {canManageAssignments && ungradedCount > 0 && (
+                      <span className="review-badge">{ungradedCount} to grade</span>
+                    )}
+                  </div>
                   {canManageAssignments && (
                     <div className="assignment-actions">
                       <button type="button" onClick={() => handleEdit(assignment)} aria-label="Edit assignment">Edit</button>
@@ -309,6 +395,9 @@ function AssignmentsPage() {
                   <div className="submissions-panel">
                     <div className="submissions-header">
                       <h4>Student submissions</h4>
+                      <span className="submissions-count">
+                        {assignmentSubmissions.length} submitted
+                      </span>
                       <button
                         type="button"
                         className="secondary-btn"
@@ -366,7 +455,9 @@ function AssignmentsPage() {
             );
           })
         ) : (
-          <p className="empty-message">No assignments yet</p>
+          <p className="empty-message">
+            {assignments.length === 0 ? 'No assignments yet' : 'No assignments match this review filter.'}
+          </p>
         )}
       </div>
 
