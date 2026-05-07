@@ -25,6 +25,8 @@ const menuItems = [
 const studentMenuItems = [
   { path: '/dashboard', label: 'Dashboard', icon: 'D' },
   { path: '/schedule', label: 'Schedule', icon: 'S' },
+  { path: '/office-hours', label: 'Office Hours', icon: 'O' },
+  { path: '/meetings', label: 'Meetings', icon: 'M' },
   { path: '/assignments', label: 'Assignments', icon: 'A' },
   { path: '/grades', label: 'Grades', icon: 'G' },
   { path: '/courses', label: 'Courses', icon: 'C' },
