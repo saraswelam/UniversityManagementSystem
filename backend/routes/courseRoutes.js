@@ -7,7 +7,9 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
-    const professorFilter = req.query.professor ? { professor: req.query.professor } : {};
+    const professorFilter = req.user.role === "professor"
+      ? { professor: req.user.email }
+      : (req.query.professor ? { professor: req.query.professor } : {});
     const departmentFilter = req.query.department
       ? { department: req.query.department.trim() }
       : {};

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { meetingsApi } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
 import { useAuth } from '../../auth/AuthContext';
@@ -14,10 +15,22 @@ function MeetingsPage() {
   const toast = useToast();
   const { user = {} } = useAuth();
   const isAdmin = user.role === 'admin';
+  const location = useLocation();
+  const navigate = useNavigate();
+  const openFromQuery = new URLSearchParams(location.search).get('new') === '1';
 
   useEffect(() => {
     fetchMeetings();
   }, []);
+
+  useEffect(() => {
+    if (!openFromQuery) return;
+
+    setEditingMeeting(null);
+    setFormData({ title: '', date: '', time: '', link: '', description: '' });
+    setShowModal(true);
+    navigate('/meetings', { replace: true });
+  }, [openFromQuery, navigate]);
 
   const fetchMeetings = async () => {
     try {

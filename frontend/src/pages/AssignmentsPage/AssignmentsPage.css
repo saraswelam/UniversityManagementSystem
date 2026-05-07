@@ -41,7 +41,7 @@
 
 .assignment-card {
   background: #fff;
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
@@ -69,17 +69,18 @@
 }
 
 .assignment-actions button {
-  background: none;
-  border: none;
+  background: #f7f8fa;
+  border: 1px solid #e5e8ec;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 16px;
-  padding: 4px;
-  opacity: 0.6;
-  transition: opacity 0.2s;
+  font-size: 12px;
+  padding: 6px 10px;
+  color: #2c3e50;
+  transition: background-color 0.2s;
 }
 
 .assignment-actions button:hover {
-  opacity: 1;
+  background: #eef1f5;
 }
 
 .assignment-title {
@@ -106,6 +107,116 @@
   font-family: 'DM Sans', sans-serif;
   font-size: 13px;
   color: #7f8c8d;
+}
+
+.student-submission-panel,
+.submissions-panel {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid #edf0f2;
+}
+
+.student-submission-panel {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.student-submission-panel div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #2c3e50;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+}
+
+.student-submission-panel span,
+.submission-student span,
+.empty-submissions {
+  color: #7f8c8d;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+}
+
+.submissions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.submissions-header h4 {
+  margin: 0;
+  font-family: 'DM Sans', sans-serif;
+  color: #2c3e50;
+  font-size: 15px;
+}
+
+.submissions-table {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.submission-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.4fr) auto minmax(90px, 110px) minmax(160px, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #edf0f2;
+  border-radius: 8px;
+  background: #fbfcfd;
+}
+
+.submission-student {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.submission-student strong {
+  color: #2c3e50;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+}
+
+.submission-row input {
+  width: 100%;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+}
+
+.secondary-btn {
+  padding: 10px 14px;
+  border: 1px solid #d7dde3;
+  border-radius: 8px;
+  background: #fff;
+  color: #2c3e50;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.secondary-btn:hover:not(:disabled) {
+  border-color: #e6b800;
+  color: #1a1a2e;
+}
+
+.secondary-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .empty-message {
@@ -168,9 +279,26 @@
   background-color: #d4a800;
 }
 
+.submit-btn.compact {
+  padding: 10px 14px;
+  white-space: nowrap;
+}
+
 .loading {
   text-align: center;
   padding: 40px;
   color: #999;
   font-family: 'DM Sans', sans-serif;
+}
+
+@media (max-width: 900px) {
+  .submission-row {
+    grid-template-columns: 1fr;
+  }
+
+  .student-submission-panel,
+  .submissions-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }

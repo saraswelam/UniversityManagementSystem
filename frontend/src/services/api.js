@@ -44,6 +44,27 @@ async function request(path, options = {}) {
   return data;
 }
 
+async function downloadRequest(path) {
+  const token = getToken();
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || `Request failed with status ${response.status}`);
+  }
+
+  const blob = await response.blob();
+  const disposition = response.headers.get("content-disposition") || "";
+  const filenameMatch = disposition.match(/filename="(.+)"/);
+
+  return {
+    blob,
+    filename: filenameMatch?.[1] || "download",
+  };
+}
+
 const crudApi = (resource) => ({
   getAll: () => request(resource),
   getById: (id) => request(`${resource}/${id}`),
@@ -161,6 +182,9 @@ export const assignmentsApi = {
     method: "PATCH",
     body: JSON.stringify(data),
   }),
+  getGradebook: () => request("/assignments/gradebook"),
+  downloadSubmission: (id) => downloadRequest(`/assignments/submissions/${id}/download`),
+  downloadSubmissionsBulk: (assignmentId) => downloadRequest(`/assignments/submissions/download/bulk?assignmentId=${assignmentId}`),
 };
 
 export const discussionsApi = {

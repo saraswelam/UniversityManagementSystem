@@ -1,7 +1,25 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { coursesApi, assignmentsApi, announcementsApi } from '../../services/api';
+import { announcementsApi, assignmentsApi, coursesApi, meetingsApi } from '../../services/api';
+import { useAuth } from '../../auth/AuthContext';
 import './Dashboard.css';
+
+function isUpcomingMeeting(meeting) {
+  if (!meeting.date || meeting.status === 'cancelled') return false;
+
+  const meetingDate = new Date(`${meeting.date}T${meeting.time || '00:00'}`);
+  return meetingDate >= new Date();
+}
+
+function isElectiveRegistrationOpen(course) {
+  const now = new Date();
+  const start = course.registrationStart ? new Date(course.registrationStart) : null;
+  const end = course.registrationEnd ? new Date(course.registrationEnd) : null;
+
+  if (start && now < start) return false;
+  if (end && now > end) return false;
+  return true;
+}
 
 function Dashboard() {
   const [stats, setStats] = useState({
@@ -14,31 +32,28 @@ function Dashboard() {
   const [recentAnnouncements, setRecentAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { user = {} } = useAuth();
+  const role = user.role || 'student';
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [courses, assignments, announcements] = await Promise.all([
+        const [courses, assignments, announcements, meetings] = await Promise.all([
           coursesApi.getAll(),
           assignmentsApi.getAll(),
           announcementsApi.getAll(),
+          meetingsApi.getAll(),
         ]);
-        const now = new Date();
-        const electives = courses.filter((course) => course.type === 'elective');
-        const isRegistrationOpen = electives.some((course) => {
-          const start = course.registrationStart ? new Date(course.registrationStart) : null;
-          const end = course.registrationEnd ? new Date(course.registrationEnd) : null;
 
-          if (start && now < start) return false;
-          if (end && now > end) return false;
-          return true;
-        });
+        const electives = courses.filter((course) => course.type === 'elective');
+        const registrationOpen = electives.some(isElectiveRegistrationOpen);
+
         setStats({
-          courses: courses.length || 0,
-          assignments: assignments.length || 0,
-          announcements: announcements.length || 0,
-          upcomingMeetings: 0,
-          electiveRegistration: electives.length > 0 && isRegistrationOpen ? 'Open' : 'Closed',
+          courses: courses.length,
+          assignments: assignments.length,
+          announcements: announcements.length,
+          upcomingMeetings: meetings.filter(isUpcomingMeeting).length,
+          electiveRegistration: electives.length > 0 && registrationOpen ? 'Open' : 'Closed',
         });
         setRecentAnnouncements(announcements.slice(0, 3));
       } catch (error) {
@@ -47,8 +62,24 @@ function Dashboard() {
         setLoading(false);
       }
     };
+
     fetchData();
   }, []);
+
+  const quickActions = [
+    (role === 'admin' || role === 'professor') && {
+      label: 'Create Assignment',
+      path: '/assignments?new=1',
+    },
+    role === 'admin' && {
+      label: 'Post Announcement',
+      path: '/announcements?new=1',
+    },
+    {
+      label: 'Schedule Meeting',
+      path: '/meetings?new=1',
+    },
+  ].filter(Boolean);
 
   if (loading) {
     return <div className="loading">Loading dashboard...</div>;
@@ -57,41 +88,41 @@ function Dashboard() {
   return (
     <div className="dashboard">
       <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-icon">📚</div>
+        <button type="button" className="stat-card" onClick={() => navigate('/courses')}>
+          <div className="stat-icon">C</div>
           <div className="stat-info">
             <span className="stat-value">{stats.courses}</span>
             <span className="stat-label">Courses</span>
           </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon">📝</div>
+        </button>
+        <button type="button" className="stat-card" onClick={() => navigate('/assignments')}>
+          <div className="stat-icon">A</div>
           <div className="stat-info">
             <span className="stat-value">{stats.assignments}</span>
             <span className="stat-label">Assignments</span>
           </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon">📢</div>
+        </button>
+        <button type="button" className="stat-card" onClick={() => navigate('/announcements')}>
+          <div className="stat-icon">N</div>
           <div className="stat-info">
             <span className="stat-value">{stats.announcements}</span>
             <span className="stat-label">Announcements</span>
           </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon">📅</div>
+        </button>
+        <button type="button" className="stat-card" onClick={() => navigate('/meetings')}>
+          <div className="stat-icon">M</div>
           <div className="stat-info">
             <span className="stat-value">{stats.upcomingMeetings}</span>
             <span className="stat-label">Upcoming Meetings</span>
           </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon">🧾</div>
+        </button>
+        <button type="button" className="stat-card" onClick={() => navigate('/courses')}>
+          <div className="stat-icon">E</div>
           <div className="stat-info">
             <span className="stat-value">{stats.electiveRegistration}</span>
             <span className="stat-label">Elective Registration</span>
           </div>
-        </div>
+        </button>
       </div>
 
       <div className="dashboard-sections">
@@ -100,17 +131,19 @@ function Dashboard() {
           {recentAnnouncements.length > 0 ? (
             <div className="announcement-list">
               {recentAnnouncements.map((announcement) => (
-                <div
+                <button
+                  type="button"
                   key={announcement._id}
                   className={`announcement-item${announcement.pinned ? ' pinned' : ''}${announcement.cancelled ? ' cancelled' : ''}`}
+                  onClick={() => navigate('/announcements')}
                 >
                   <h4>{announcement.title}</h4>
                   <p>{announcement.content?.substring(0, 100)}...</p>
                   <span className="announcement-date">
                     {announcement.date || new Date(announcement.createdAt).toLocaleDateString()}
-                    {announcement.cancelled ? ' • Cancelled' : ''}
+                    {announcement.cancelled ? ' - Cancelled' : ''}
                   </span>
-                </div>
+                </button>
               ))}
             </div>
           ) : (
@@ -121,10 +154,16 @@ function Dashboard() {
         <div className="quick-actions">
           <h3 className="section-title">Quick Actions</h3>
           <div className="action-buttons">
-            
-            <button className="action-btn">📝 Create Assignment</button>
-            <button className="action-btn">📢 Post Announcement</button>
-            <button className="action-btn">📅 Schedule Meeting</button>
+            {quickActions.map((action) => (
+              <button
+                key={action.path}
+                type="button"
+                className="action-btn"
+                onClick={() => navigate(action.path)}
+              >
+                {action.label}
+              </button>
+            ))}
           </div>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { announcementsApi, coursesApi } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
 import { useAuth } from '../../auth/AuthContext';
@@ -24,10 +25,31 @@ function AnnouncementsPage() {
   const toast = useToast();
   const { user = {} } = useAuth();
   const isAdmin = user.role === 'admin';
+  const location = useLocation();
+  const navigate = useNavigate();
+  const openFromQuery = new URLSearchParams(location.search).get('new') === '1';
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (!openFromQuery || !isAdmin) return;
+
+    setEditingAnnouncement(null);
+    setFormData({
+      title: '',
+      content: '',
+      courseId: '',
+      date: new Date().toISOString().split('T')[0],
+      time: '',
+      location: '',
+      pinned: false,
+      cancelled: false,
+    });
+    setShowModal(true);
+    navigate('/announcements', { replace: true });
+  }, [openFromQuery, isAdmin, navigate]);
 
   const fetchData = async () => {
     try {
