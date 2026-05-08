@@ -202,6 +202,14 @@ export const officeHoursApi = {
 
 export const meetingsApi = {
   ...crudApi("/meetings"),
+  getBusySlots: (professor, startDate, endDate) => {
+    const params = new URLSearchParams();
+    if (professor) params.set("professor", professor);
+    if (startDate) params.set("startDate", startDate);
+    if (endDate) params.set("endDate", endDate);
+    const query = params.toString() ? `?${params.toString()}` : "";
+    return request(`/meetings/busy${query}`);
+  },
   updateStatus: (id, status) => request(`/meetings/${id}/status`, {
     method: "PATCH",
     body: JSON.stringify({ status }),
