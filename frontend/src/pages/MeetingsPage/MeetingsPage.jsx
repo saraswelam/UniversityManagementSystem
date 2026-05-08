@@ -15,6 +15,7 @@ function MeetingsPage() {
   const toast = useToast();
   const { user = {} } = useAuth();
   const isAdmin = user.role === 'admin';
+  const isStudent = user.role === 'student';
   const location = useLocation();
   const navigate = useNavigate();
   const openFromQuery = new URLSearchParams(location.search).get('new') === '1';
@@ -24,13 +25,13 @@ function MeetingsPage() {
   }, []);
 
   useEffect(() => {
-    if (!openFromQuery) return;
+    if (!openFromQuery || isStudent) return;
 
     setEditingMeeting(null);
     setFormData({ title: '', date: '', time: '', link: '', description: '' });
     setShowModal(true);
     navigate('/meetings', { replace: true });
-  }, [openFromQuery, navigate]);
+  }, [openFromQuery, navigate, isStudent]);
 
   const fetchMeetings = async () => {
     try {
@@ -92,9 +93,15 @@ function MeetingsPage() {
     <div className="meetings-page">
       <div className="page-header">
         <h2>Meetings</h2>
-        <button className="add-btn" onClick={() => { setEditingMeeting(null); setFormData({ title: '', date: '', time: '', link: '', description: '' }); setShowModal(true); }}>
-          ➕ Schedule Meeting
-        </button>
+        {isStudent ? (
+          <button className="add-btn" onClick={() => navigate('/office-hours')}>
+            Book Office Hour Slot
+          </button>
+        ) : (
+          <button className="add-btn" onClick={() => { setEditingMeeting(null); setFormData({ title: '', date: '', time: '', link: '', description: '' }); setShowModal(true); }}>
+            Schedule Meeting
+          </button>
+        )}
       </div>
 
       <div className="meetings-list">
@@ -130,33 +137,35 @@ function MeetingsPage() {
         )}
       </div>
 
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={editingMeeting ? 'Edit Meeting' : 'Schedule Meeting'}>
-        <form onSubmit={handleSubmit} className="meeting-form">
-          <div className="form-group">
-            <label>Title</label>
-            <input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
-          </div>
-          <div className="form-row">
+      {!isStudent && (
+        <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={editingMeeting ? 'Edit Meeting' : 'Schedule Meeting'}>
+          <form onSubmit={handleSubmit} className="meeting-form">
             <div className="form-group">
-              <label>Date</label>
-              <input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} required />
+              <label>Meeting Subject</label>
+              <input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Date</label>
+                <input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} required />
+              </div>
+              <div className="form-group">
+                <label>Time</label>
+                <input type="time" value={formData.time} onChange={(e) => setFormData({ ...formData, time: e.target.value })} />
+              </div>
             </div>
             <div className="form-group">
-              <label>Time</label>
-              <input type="time" value={formData.time} onChange={(e) => setFormData({ ...formData, time: e.target.value })} />
+              <label>Meeting Link</label>
+              <input type="url" value={formData.link} onChange={(e) => setFormData({ ...formData, link: e.target.value })} placeholder="https://..." />
             </div>
-          </div>
-          <div className="form-group">
-            <label>Meeting Link</label>
-            <input type="url" value={formData.link} onChange={(e) => setFormData({ ...formData, link: e.target.value })} placeholder="https://..." />
-          </div>
-          <div className="form-group">
-            <label>Description</label>
-            <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows="3" />
-          </div>
-          <button type="submit" className="submit-btn">{editingMeeting ? 'Update' : 'Schedule'}</button>
-        </form>
-      </Modal>
+            <div className="form-group">
+              <label>Description</label>
+              <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows="3" />
+            </div>
+            <button type="submit" className="submit-btn">{editingMeeting ? 'Update' : 'Schedule'}</button>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 }

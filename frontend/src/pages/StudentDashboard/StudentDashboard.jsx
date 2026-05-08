@@ -8,6 +8,16 @@ function getCourse(enrollment) {
   return enrollment.course || enrollment;
 }
 
+function isPastDateTime(dateValue, timeValue) {
+  if (!dateValue || !timeValue) return false;
+  const dateParts = dateValue.split('-').map(Number);
+  const timeParts = timeValue.split(':').map(Number);
+  if (dateParts.length !== 3 || dateParts.some(Number.isNaN)) return false;
+  if (timeParts.length < 2 || timeParts.some(Number.isNaN)) return false;
+  const meetingTime = new Date(dateParts[0], dateParts[1] - 1, dateParts[2], timeParts[0], timeParts[1]);
+  return meetingTime <= new Date();
+}
+
 function StudentDashboard() {
   const [enrollments, setEnrollments] = useState([]);
   const [assignments, setAssignments] = useState([]);
@@ -80,6 +90,11 @@ function StudentDashboard() {
 
     if (!professor) {
       toast.error('Choose a professor first');
+      return;
+    }
+
+    if (isPastDateTime(booking.date, booking.time)) {
+      toast.error('Please choose a future time');
       return;
     }
 
@@ -225,7 +240,7 @@ function StudentDashboard() {
           </div>
 
           <form className="booking-form" onSubmit={handleBookMeeting}>
-            <label className="student-label" htmlFor="meeting-title">Meeting title</label>
+            <label className="student-label" htmlFor="meeting-title">Meeting Subject</label>
             <input
               id="meeting-title"
               className="student-input"
@@ -242,6 +257,7 @@ function StudentDashboard() {
                   type="date"
                   value={booking.date}
                   onChange={(event) => setBooking({ ...booking, date: event.target.value })}
+                  min={new Date().toISOString().split('T')[0]}
                   required
                 />
               </div>
