@@ -10,6 +10,7 @@ function MessagesPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState(null);
+  const [activeTab, setActiveTab] = useState('inbox'); // 'inbox' or 'sent'
   const [formData, setFormData] = useState({ recipient: '', subject: '', content: '' });
   const [childCourses, setChildCourses] = useState([]);
   const [instructors, setInstructors] = useState([]);
@@ -23,6 +24,7 @@ function MessagesPage() {
   const toast = useToast();
   const { user = {} } = useAuth();
   const isParent = user.role === 'parent';
+  const userEmail = user.email || '';
 
   useEffect(() => {
     fetchMessages();
@@ -111,6 +113,7 @@ function MessagesPage() {
       try {
         await messagesApi.delete(id);
         toast.success('Message deleted');
+        setSelectedMessage(null);
         fetchMessages();
       } catch (error) {
         toast.error(error.message);
@@ -118,7 +121,14 @@ function MessagesPage() {
     }
   };
 
-  const unreadCount = messages.filter(m => !m.read).length;
+  // Filter messages based on active tab
+  // Inbox: messages TO you (but not FROM you - exclude self-messages from inbox)
+  const inboxMessages = messages.filter(msg => msg.to === userEmail && msg.from !== userEmail);
+  // Sent: messages FROM you
+  const sentMessages = messages.filter(msg => msg.from === userEmail);
+  const displayedMessages = activeTab === 'inbox' ? inboxMessages : sentMessages;
+  
+  const unreadCount = inboxMessages.filter(m => !m.read).length;
 
   if (loading) return <div className="loading">Loading messages...</div>;
 
@@ -131,28 +141,53 @@ function MessagesPage() {
         </button>
       </div>
 
+      <div className="message-tabs">
+        <button 
+          className={`tab-btn ${activeTab === 'inbox' ? 'active' : ''}`}
+          onClick={() => { setActiveTab('inbox'); setSelectedMessage(null); }}
+        >
+          📥 Inbox ({inboxMessages.length})
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'sent' ? 'active' : ''}`}
+          onClick={() => { setActiveTab('sent'); setSelectedMessage(null); }}
+        >
+          📤 Sent ({sentMessages.length})
+        </button>
+      </div>
+
       <div className="messages-container">
         <div className="messages-list">
-          {messages.length > 0 ? (
-            messages.map((message) => (
+          {displayedMessages.length > 0 ? (
+            displayedMessages.map((message) => (
               <div
                 key={message._id}
-                className={`message-item ${!message.read ? 'unread' : ''}`}
+                className={`message-item ${!message.read && activeTab === 'inbox' ? 'unread' : ''}`}
                 onClick={() => handleRead(message)}
               >
-                <div className="message-sender">{message.sender?.name || 'Unknown'}</div>
+                <div className="message-sender">
+                  {activeTab === 'inbox' 
+                    ? `From: ${message.from || 'Unknown'}` 
+                    : `To: ${message.to || 'Unknown'}`
+                  }
+                </div>
                 <div className="message-subject">{message.subject}</div>
                 <div className="message-preview">{message.content?.substring(0, 50)}...</div>
                 <div className="message-time">
                   {message.createdAt ? new Date(message.createdAt).toLocaleDateString() : ''}
                 </div>
-                <button className="delete-btn" onClick={(e) => { e.stopPropagation(); handleDelete(message._id); }}>
-                  🗑️
-                </button>
+                {/* Only show delete button in Sent tab (sender can delete) */}
+                {activeTab === 'sent' && (
+                  <button className="delete-btn" onClick={(e) => { e.stopPropagation(); handleDelete(message._id); }}>
+                    🗑️
+                  </button>
+                )}
               </div>
             ))
           ) : (
-            <p className="empty-message">No messages</p>
+            <p className="empty-message">
+              {activeTab === 'inbox' ? 'No messages in inbox' : 'No sent messages'}
+            </p>
           )}
         </div>
 
@@ -163,7 +198,12 @@ function MessagesPage() {
               <button className="close-btn" onClick={() => setSelectedMessage(null)}>✕</button>
             </div>
             <div className="detail-meta">
-              <span>From: {selectedMessage.sender?.name || 'Unknown'}</span>
+              <span>
+                {activeTab === 'inbox' 
+                  ? `From: ${selectedMessage.from || 'Unknown'}` 
+                  : `To: ${selectedMessage.to || 'Unknown'}`
+                }
+              </span>
               <span>{selectedMessage.createdAt ? new Date(selectedMessage.createdAt).toLocaleString() : ''}</span>
             </div>
             <div className="detail-content">{selectedMessage.content}</div>

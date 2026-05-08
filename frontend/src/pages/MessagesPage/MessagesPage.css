@@ -45,6 +45,37 @@
   background-color: #d4a800;
 }
 
+.message-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #eee;
+}
+
+.tab-btn {
+  padding: 12px 24px;
+  border: none;
+  border-bottom: 3px solid transparent;
+  background: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #7f8c8d;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: #2c3e50;
+  background-color: #f8f4e8;
+}
+
+.tab-btn.active {
+  color: #e6b800;
+  border-bottom-color: #e6b800;
+  background-color: #f8f4e8;
+}
+
 .messages-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
